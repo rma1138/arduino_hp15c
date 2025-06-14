@@ -58,8 +58,8 @@ int kcode[] = {11, 12, 13, 14, 15, 16, 17, 18, 19, 10,
 int key_count = 39;
 
 #include "DFRobot_LedDisplayModule.h"
-DFRobot_LedDisplayModule LED1(&Wire, 0xE0);
-DFRobot_LedDisplayModule LED2(&Wire, 0xE2);
+DFRobot_LedDisplayModule LEDRight(&Wire, 0xE0);
+DFRobot_LedDisplayModule LEDLeft(&Wire, 0xE2);
 
 double x = 0;
 double y = 0;
@@ -103,6 +103,7 @@ double pi = 3.141592654;
 
 char str1[9];
 char str2[9];
+char str[16];
 
 int digit_key_value(int key)
 {
@@ -195,36 +196,36 @@ void ledPrint(int valueSize, int precision, const char *buffer, DFRobot_LedDispl
   }
 }
 
-void setLedDisplayArea(int valueSize, DFRobot_LedDisplayModule &LED1Ptr)
+void setLedDisplayArea(int valueSize, DFRobot_LedDisplayModule &ledPtr)
 {
   switch (valueSize)
   {
   case 1:
-    LED1Ptr.setDisplayArea(8);
+    ledPtr.setDisplayArea(8);
     break;
   case 2:
-    LED1Ptr.setDisplayArea(7, 8);
+    ledPtr.setDisplayArea(7, 8);
     break;
   case 3:
-    LED1Ptr.setDisplayArea(6, 7, 8);
+    ledPtr.setDisplayArea(6, 7, 8);
     break;
   case 4:
-    LED1Ptr.setDisplayArea(5, 6, 7, 8);
+    ledPtr.setDisplayArea(5, 6, 7, 8);
     break;
   case 5:
-    LED1Ptr.setDisplayArea(4, 5, 6, 7, 8);
+    ledPtr.setDisplayArea(4, 5, 6, 7, 8);
     break;
   case 6:
-    LED1Ptr.setDisplayArea(3, 4, 5, 6, 7, 8);
+    ledPtr.setDisplayArea(3, 4, 5, 6, 7, 8);
     break;
   case 7:
-    LED1Ptr.setDisplayArea(2, 3, 4, 5, 6, 7, 8);
+    ledPtr.setDisplayArea(2, 3, 4, 5, 6, 7, 8);
     break;
   case 8:
-    LED1Ptr.setDisplayArea(1, 2, 3, 4, 5, 6, 7, 8);
+    ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6, 7, 8);
     break;
   default:
-    LED1Ptr.setDisplayArea();
+    ledPtr.setDisplayArea();
     break;
   }
 }
@@ -233,14 +234,14 @@ void setDisplayArea(int valueSize)
 {
   if (valueSize > 8)
   {
-    setLedDisplayArea(8, LED1);
-    setLedDisplayArea(valueSize - 8, LED2);
-    LED2.displayOn();
+    setLedDisplayArea(8, LEDRight);
+    setLedDisplayArea(valueSize - 8, LEDLeft);
+    LEDLeft.displayOn();
   }
   else
   {
-    setLedDisplayArea(valueSize, LED1);
-    LED2.displayOff();
+    setLedDisplayArea(valueSize, LEDRight);
+    LEDLeft.displayOff();
   }
 }
 
@@ -297,8 +298,8 @@ void display(double f)
     dtostrf(abs(f2), (8 - precision), precision, str2);
     dtostrf(f1, (valueSize - 8), 0, str1);
 
-    ledPrint((valueSize - 8), 0, str1, LED2);
-    ledPrint(8, precision, str2, LED1);
+    ledPrint((valueSize - 8), 0, str1, LEDLeft);
+    ledPrint(8, precision, str2, LEDRight);
 
     // Serial.print("sh = ");
     // Serial.println(sh);
@@ -314,12 +315,12 @@ void display(double f)
   else
   {
     dtostrf(f, valueSize - precision, precision, str2);
-    ledPrint(valueSize, precision, str2, LED1);
+    ledPrint(valueSize, precision, str2, LEDRight);
+
 
     Serial.print("f = ");
-    Serial.println(f, precision);
-    Serial.print("str2 = ");
-    Serial.println(str2);
+    dtostrf(f, valueSize, precision, str);
+    Serial.println(str);
   }
 
   Serial.print("t = ");
@@ -332,8 +333,9 @@ void display(double f)
   Serial.println(x);
   if (entered)
   {
-    Serial.print("digit entered = ");
-    Serial.println(in);
+    Serial.print("digits entered = ");
+    dtostrf(in, valueSize, precision, str);
+    Serial.println(str);
   }
   Serial.println("-----------------------");
 }
@@ -361,27 +363,27 @@ void stack_down()
 
 void setup()
 {
-//  Serial.begin(9600);
+  Serial.begin(9600);
 
   for (int i = 0; i < key_count; i++)
   {
     pinMode(key[i], INPUT);
   }
 
-  while (LED1.begin(LED1.e8Bit) != 0)
+  while (LEDRight.begin(LEDRight.e8Bit) != 0)
   {
-    Serial.println("FaiLED1 to initialize the chip , please confirm the chip connection!");
+    Serial.println("FaiLEDRight to initialize the chip , please confirm the chip connection!");
     delay(1000);
   }
-  LED1.setDisplayArea();
-  LED1.displayOff();
-  while (LED2.begin(LED2.e8Bit) != 0)
+  LEDRight.setDisplayArea();
+  LEDRight.displayOff();
+  while (LEDLeft.begin(LEDLeft.e8Bit) != 0)
   {
-    Serial.println("FaiLED1 to initialize the chip , please confirm the chip connection!");
+    Serial.println("FaiLEDRight to initialize the chip , please confirm the chip connection!");
     delay(1000);
   }
-  LED2.setDisplayArea();
-  LED2.displayOff();
+  LEDLeft.setDisplayArea();
+  LEDLeft.displayOff();
 
   entered = false;
   digit_incr = 0;
@@ -396,7 +398,7 @@ void setup()
   g_pressed = false;
   fix_pressed = false;
 
-  LED1.displayOn();
+  LEDRight.displayOn();
   display(0.00);
 
 }
@@ -487,8 +489,12 @@ void loop()
         }
         last_digit_key[last_digit_i] = digit_key_value(pressed_key);
       }
-      in = in * digit_incr + digit_key_value(pressed_key);
-      digit_incr = 10;
+      if ( __FLT_MAX__ - digit_key_value(pressed_key) < in * digit_incr) {
+        in = __FLT_MAX__;
+      } else {
+        in = in * digit_incr + digit_key_value(pressed_key);
+        digit_incr = 10;
+      }
       entered = true;
       display(in);
     }
