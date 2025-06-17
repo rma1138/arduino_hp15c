@@ -101,8 +101,8 @@ int pressed_key = 0;
 double e = 2.718281828;
 double pi = 3.141592654;
 
-char str1[9];
-char str2[9];
+char str1[10];
+char str2[10];
 char str[16];
 
 int digit_key_value(int key)
@@ -259,68 +259,75 @@ void display(double f)
   // Serial.print("valueSize = ");
   // Serial.println(valueSize);
 
-  setDisplayArea(valueSize);
-  double sh = 1;
-  if (valueSize > 8)
-  {
-    switch (precision)
+    setDisplayArea(valueSize);
+    double sh = 1;
+    if (valueSize > 8)
     {
-    case 0:
-      sh = 100000000;
-      break;
-    case 1:
-      sh = 10000000;
-      break;
-    case 2:
-      sh = 1000000;
-      break;
-    case 3:
-      sh = 100000;
-      break;
-    case 4:
-      sh = 10000;
-      break;
-    case 5:
-      sh = 1000;
-      break;
-    case 6:
-      sh = 100;
-      break;
-    case 7:
-      sh = 10;
-      break;
-    default:
-      break;
+      switch (precision)
+      {
+      case 0:
+        sh = 100000000;
+        break;
+      case 1:
+        sh = 10000000;
+        break;
+      case 2:
+        sh = 1000000;
+        break;
+      case 3:
+        sh = 100000;
+        break;
+      case 4:
+        sh = 10000;
+        break;
+      case 5:
+        sh = 1000;
+        break;
+      case 6:
+        sh = 100;
+        break;
+      case 7:
+        sh = 10;
+        break;
+      default:
+        break;
+      }
+      double f1 = trunc(f / sh);
+      double f2 = abs(f - (f1 * sh));
+      
+      dtostrf(f1, (valueSize - 8), 0, str1);
+      dtostrf(f2, 9, precision, str2);
+      for (int i = 0; i < 9; i++) {
+        if (str2[i] == 0x0)
+          break;
+        if (str2[i] == ' ') 
+          str2[i] = '0';
+        if (str2[i] == '-') 
+          str2[i] = '0';
+      }
+      ledPrint((valueSize - 8), 0, str1, LEDLeft);
+      ledPrint(8, precision, str2, LEDRight);
+
+      // Serial.print("sh = ");
+      // Serial.println(sh);
+      // Serial.print("f1 = ");
+      // Serial.println(f1, precision);
+      // Serial.print("f2 = ");
+      // Serial.println(f2, precision);
+      // Serial.print("str1 = ");
+      // Serial.println(str1);
+      // Serial.print("str2 = ");
+      // Serial.println(str2);
+      // Serial.println(); 
     }
-    double f1 = trunc(f / sh);
-    double f2 = f - (f1 * sh);
+    else
+    {
+      dtostrf(f, valueSize - precision, precision, str2);
+      ledPrint(valueSize, precision, str2, LEDRight);
 
-    dtostrf(abs(f2), (8 - precision), precision, str2);
-    dtostrf(f1, (valueSize - 8), 0, str1);
-
-    ledPrint((valueSize - 8), 0, str1, LEDLeft);
-    ledPrint(8, precision, str2, LEDRight);
-
-    // Serial.print("sh = ");
-    // Serial.println(sh);
-    // Serial.print("f1 = ");
-    // Serial.println(f1, precision);
-    // Serial.print("f2 = ");
-    // Serial.println(f2, precision);
-    // Serial.print("str1 = ");
-    // Serial.println(str1);
-    // Serial.print("str2 = ");
-    // Serial.println(str2);
-  }
-  else
-  {
-    dtostrf(f, valueSize - precision, precision, str2);
-    ledPrint(valueSize, precision, str2, LEDRight);
-
-
-    Serial.print("f = ");
-    dtostrf(f, valueSize, precision, str);
-    Serial.println(str);
+      Serial.print("f = ");
+      dtostrf(f, valueSize, precision, str);
+  Serial.println(str);
   }
 
   Serial.print("t = ");
@@ -333,11 +340,11 @@ void display(double f)
   Serial.println(x);
   if (entered)
   {
-    Serial.print("digits entered = ");
+    Serial.print("in = ");
     dtostrf(in, valueSize, precision, str);
     Serial.println(str);
   }
-  Serial.println("-----------------------");
+  Serial.println("------------------------------");
 }
 
 void stack_up()
@@ -418,6 +425,7 @@ void loop()
         break;
       }
       pressed_key = kcode[i];
+      Serial.print("k  = ");
       Serial.println(pressed_key);
       delay(100);
       break;
@@ -456,6 +464,8 @@ void loop()
     {
       fix_pressed = false;
       precision = digit_key_value(pressed_key);
+      if (precision > 7)
+        precision = 7;
       if (entered)
       {
         display(in);
