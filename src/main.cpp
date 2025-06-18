@@ -90,6 +90,7 @@ int del_key = 35;
 int sin_key = 23;
 int cos_key = 24;
 int tan_key = 25;
+int down_key = 33;
 
 bool entered = false;
 bool f_pressed = false;
@@ -362,6 +363,32 @@ void stack_down()
 {
   y = z;
   z = t;
+  digit_incr = 0;
+  in = 0;
+  entered = false;
+  last_digit_i = 0;
+}
+
+void stack_roll_up()
+{
+  double temp = t;
+  t = z;
+  z = y;
+  y = x;
+  x = temp;
+  digit_incr = 0;
+  in = 0;
+  entered = false;
+  last_digit_i = 0;
+}
+
+void stack_roll_down()
+{
+  double temp = x;
+  x = y;
+  y = z;
+  z = t;
+  t = temp;
   digit_incr = 0;
   in = 0;
   entered = false;
@@ -873,7 +900,29 @@ void loop()
       }
     }
   }
+  //    down key pressed
+  //    ----------------
+  else if (pressed_key == down_key)
+  {
+    // stack roll up
+    if (g_pressed)
+    {
+      g_pressed = false;
+      if (entered)
+        x = in;
+      stack_roll_up();
+      display(x);
 
+      // stack roll down
+    }
+    else
+    {
+      if (entered)
+        x = in;
+      stack_roll_down();
+      display(x);
+    }
+  }
   // wait 1/10 seconds for next key press
   delay(100);
 }
