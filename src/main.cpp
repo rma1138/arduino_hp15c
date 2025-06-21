@@ -61,71 +61,82 @@ int key_count = 39;
 DFRobot_LedDisplayModule LEDRight(&Wire, 0xE0);
 DFRobot_LedDisplayModule LEDLeft(&Wire, 0xE2);
 
-double x = 0;
-double y = 0;
-double z = 0;
-double t = 0;
-double in = 0;
-int last_digit_key[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-int last_digit_i = 0;
-
-int digit_incr = 0;
-int precision = PRECISION;
-
-int digit_key[] = {47, 37, 38, 39, 27, 28, 29, 17, 18, 19};
-int enter_key = 36;
-int plus_key = 40;
-int minus_key = 30;
-int mult_key = 20;
-int div_key = 10;
-int chs_key = 16;
-int sqrt_key = 11;
-int nexp_key = 12;
-int dexp_key = 13;
-int xpow_key = 14;
-int inv_key = 15;
-int f_key = 42;
-int g_key = 43;
-int del_key = 35;
-int sin_key = 23;
-int cos_key = 24;
-int tan_key = 25;
-int down_key = 33;
-
-bool entered = false;
-bool f_pressed = false;
-bool g_pressed = false;
-bool fix_pressed = false;
-
-int pressed_key = 0;
-
-double e = 2.718281828;
-double pi = 3.141592654;
-
 char str1[10];
 char str2[10];
 char str[16];
 
-int digit_key_value(int key)
+// global key codes 
+const int enter_key = 36;
+const int plus_key = 40;
+const int minus_key = 30;
+const int mult_key = 20;
+const int div_key = 10;
+const int chs_key = 16;
+const int sqrt_key = 11;
+const int nexp_key = 12;
+const int dexp_key = 13;
+const int xpow_key = 14;
+const int inv_key = 15;
+const int f_key = 42;
+const int g_key = 43;
+const int del_key = 35;
+const int sin_key = 23;
+const int cos_key = 24;
+const int tan_key = 25;
+const int down_key = 33;
+const int swap_key = 34;
+
+// global mathematical constants
+const double e = 2.718281828;
+const double pi = 3.141592654;
+
+// global stack variable and precision
+static double x = 0;
+static double y = 0;
+static double z = 0;
+static double t = 0;
+static double in = 0;
+int precision = PRECISION;
+
+int digit_key_value(const int &key)
 {
-  int i = 0;
-  for (i = 0; i < 10; i++)
+  static const int digit_key[] = {47, 37, 38, 39, 27, 28, 29, 17, 18, 19};
+  for (int i = 0; i < 10; i++)
   {
     if (key == digit_key[i])
-      break;
+      return i;
   }
-  return i;
+  return -1;
 }
 
-void ledPrint(int valueSize, int precision, const char *buffer, DFRobot_LedDisplayModule &ledPtr)
+
+bool is_digit_key(const int &key) {
+  bool is_digit = false;
+  if ( digit_key_value(key) != -1)
+    is_digit = true;
+  return is_digit;
+}
+
+
+void ledPrint(const int &valueSize, 
+              const int &precision,
+              const char *buffer, 
+              DFRobot_LedDisplayModule &ledPtr)
 {
-  static char digit[8][3] = {{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 
-                      {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}};
+  static char digit[8][3] = { {0,0,0}, 
+                              {0,0,0},
+                              {0,0,0}, 
+                              {0,0,0}, 
+                              {0,0,0}, 
+                              {0,0,0}, 
+                              {0,0,0}, 
+                              {0,0,0}};
   int digit_i = valueSize;
 
   int len = valueSize;
   if (precision > 0)
     len++;
+
   bool point = false;
   for (int i = len; i >= 0; i--)
   {
@@ -141,30 +152,17 @@ void ledPrint(int valueSize, int precision, const char *buffer, DFRobot_LedDispl
         digit[digit_i][0] = buffer[i];
         digit[digit_i][1] = '.';
         digit[digit_i][2] = 0;
-
-        // Serial.println();
-        // Serial.println("ledPrint : print point");
-        // Serial.print("ledPrint : digit_i = ");
-        // Serial.println(digit_i);
-        // Serial.print("ledPrint : digit[digit_i] = ");
-        // Serial.println(digit[digit_i]);
-
         digit_i--;
       }
       else
       {
         digit[digit_i][0] = buffer[i];
         digit[digit_i][1] = 0;
-
-        // Serial.print("ledPrint : digit_i = ");
-        // Serial.println(digit_i);
-        // Serial.print("ledPrint : digit[digit_i] = ");
-        // Serial.println(digit[digit_i]);
-
         digit_i--;
       }
     }
   }
+
   switch (valueSize)
   {
   case 1:
@@ -197,7 +195,9 @@ void ledPrint(int valueSize, int precision, const char *buffer, DFRobot_LedDispl
   }
 }
 
-void setLedDisplayArea(int valueSize, DFRobot_LedDisplayModule &ledPtr)
+
+void setLedDisplayArea( const int &valueSize, 
+                        DFRobot_LedDisplayModule &ledPtr)
 {
   switch (valueSize)
   {
@@ -231,7 +231,8 @@ void setLedDisplayArea(int valueSize, DFRobot_LedDisplayModule &ledPtr)
   }
 }
 
-void setDisplayArea(int valueSize)
+
+void setDisplayArea(const int &valueSize)
 {
   if (valueSize > 8)
   {
@@ -246,276 +247,222 @@ void setDisplayArea(int valueSize)
   }
 }
 
-void display(double f)
+
+void display(const double &value)
 {
-  int valueSize = log10(long(abs(f))) + precision + 1;
-  if (f < 0)
+  int valueSize = log10(long(abs(value))) + precision + 1;
+
+  if (value < 0)
     valueSize = valueSize + 1;
-  if (f == 0.0)
+
+  if (value == 0.0)
     valueSize = 1 + precision;
+    
+  setDisplayArea(valueSize);
+  double sh = 1;
 
-  // Serial.println(f, precision);
-  // Serial.print("precision = ");
-  // Serial.println(precision);
-  // Serial.print("valueSize = ");
-  // Serial.println(valueSize);
-
-    setDisplayArea(valueSize);
-    double sh = 1;
-    if (valueSize > 8)
-    {
-      switch (precision)
-      {
-      case 0:
-        sh = 100000000;
-        break;
-      case 1:
-        sh = 10000000;
-        break;
-      case 2:
-        sh = 1000000;
-        break;
-      case 3:
-        sh = 100000;
-        break;
-      case 4:
-        sh = 10000;
-        break;
-      case 5:
-        sh = 1000;
-        break;
-      case 6:
-        sh = 100;
-        break;
-      case 7:
-        sh = 10;
-        break;
-      default:
-        break;
-      }
-      double f1 = trunc(f / sh);
-      double f2 = abs(f - (f1 * sh));
-      
-      dtostrf(f1, (valueSize - 8), 0, str1);
-      dtostrf(f2, 9, precision, str2);
-      for (int i = 0; i < 9; i++) {
-        if (str2[i] == 0x0)
-          break;
-        if (str2[i] == ' ') 
-          str2[i] = '0';
-        if (str2[i] == '-') 
-          str2[i] = '0';
-      }
-      ledPrint((valueSize - 8), 0, str1, LEDLeft);
-      ledPrint(8, precision, str2, LEDRight);
-
-      // Serial.print("sh = ");
-      // Serial.println(sh);
-      // Serial.print("f1 = ");
-      // Serial.println(f1, precision);
-      // Serial.print("f2 = ");
-      // Serial.println(f2, precision);
-      // Serial.print("str1 = ");
-      // Serial.println(str1);
-      // Serial.print("str2 = ");
-      // Serial.println(str2);
-      // Serial.println(); 
-    }
-    else
-    {
-      dtostrf(f, valueSize - precision, precision, str2);
-      ledPrint(valueSize, precision, str2, LEDRight);
-
-      Serial.print("f = ");
-      dtostrf(f, valueSize, precision, str);
-  Serial.println(str);
-  }
-
-  Serial.print("t = ");
-  Serial.println(t);
-  Serial.print("z = ");
-  Serial.println(z);
-  Serial.print("y = ");
-  Serial.println(y);
-  Serial.print("x = ");
-  Serial.println(x);
-  if (entered)
+  if (valueSize > 8)
   {
-    Serial.print("in = ");
-    dtostrf(in, valueSize, precision, str);
-    Serial.println(str);
+    switch (precision)
+    {
+    case 0:
+      sh = 100000000;
+      break;
+    case 1:
+      sh = 10000000;
+      break;
+    case 2:
+      sh = 1000000;
+      break;
+    case 3:
+      sh = 100000;
+      break;
+    case 4:
+      sh = 10000;
+      break;
+    case 5:
+      sh = 1000;
+      break;
+    case 6:
+      sh = 100;
+      break;
+    case 7:
+      sh = 10;
+      break;
+    default:
+      break;
+    }
+    double d1 = trunc(value / sh);
+    double d2 = abs(value - (d1 * sh));
+    
+    dtostrf(d1, (valueSize - 8), 0, str1);
+    dtostrf(d2, 9, precision, str2);
+
+    for (int i = 0; i < 9; i++) {
+      if (str2[i] == 0x0)
+        break;
+      if (str2[i] == ' ') 
+        str2[i] = '0';
+      if (str2[i] == '-') 
+        str2[i] = '0';
+    }
+    ledPrint((valueSize - 8), 0, str1, LEDLeft);
+    ledPrint(8, precision, str2, LEDRight);
   }
-  Serial.println("------------------------------");
+  else
+  {
+    dtostrf(value, valueSize - precision, precision, str2);
+    ledPrint(valueSize, precision, str2, LEDRight);
+  }
 }
 
-void stack_up()
+
+void clear_entered( int &digit_incr, 
+                    double &in, 
+                    bool &entered, 
+                    int &last_digit_i) {
+  digit_incr = 0;
+  in = 0;
+  entered = false;
+  last_digit_i = 0;
+}
+
+
+void stack_up(double &t, 
+              double &z, 
+              double &y, 
+              double &x, 
+              int &digit_incr, 
+              double &in, 
+              bool &entered, 
+              int &last_digit_i)
 {
   t = z;
   z = y;
   y = x;
-  digit_incr = 0;
-  in = 0;
-  entered = false;
-  last_digit_i = 0;
+  clear_entered(digit_incr, 
+                in, 
+                entered, 
+                last_digit_i);
 }
 
-void stack_down()
+
+void stack_down(double &t, 
+                double &z, 
+                double &y, 
+                int &digit_incr, 
+                double &in, 
+                bool &entered, 
+                int &last_digit_i)
 {
   y = z;
   z = t;
-  digit_incr = 0;
-  in = 0;
-  entered = false;
-  last_digit_i = 0;
+  clear_entered(digit_incr, 
+                in, 
+                entered, 
+                last_digit_i);
 }
 
-void stack_roll_up()
+
+void stack_roll_up( double &t, 
+                    double &z, 
+                    double &y, 
+                    double &x, 
+                    int &digit_incr, 
+                    double &in, 
+                    bool &entered, 
+                    int &last_digit_i)
 {
   double temp = t;
   t = z;
   z = y;
   y = x;
   x = temp;
-  digit_incr = 0;
-  in = 0;
-  entered = false;
-  last_digit_i = 0;
+  clear_entered(digit_incr, 
+                in, 
+                entered, 
+                last_digit_i);
 }
 
-void stack_roll_down()
+
+void stack_roll_down( double &t, 
+                      double &z, 
+                      double &y, 
+                      double &x, 
+                      int &digit_incr, 
+                      double &in, 
+                      bool &entered, 
+                      int &last_digit_i)
 {
   double temp = x;
   x = y;
   y = z;
   z = t;
   t = temp;
-  digit_incr = 0;
-  in = 0;
-  entered = false;
-  last_digit_i = 0;
+  clear_entered(digit_incr, 
+                in, 
+                entered, 
+                last_digit_i);
 }
 
-void setup()
+
+void swap_xy( double &y, 
+              double &x, 
+              int &digit_incr, 
+              double &in, 
+              bool &entered, 
+              int &last_digit_i)
 {
-  Serial.begin(9600);
-
-  for (int i = 0; i < key_count; i++)
-  {
-    pinMode(key[i], INPUT);
-  }
-
-  while (LEDRight.begin(LEDRight.e8Bit) != 0)
-  {
-    Serial.println("FaiLEDRight to initialize the chip , please confirm the chip connection!");
-    delay(1000);
-  }
-  LEDRight.setDisplayArea();
-  LEDRight.displayOff();
-  while (LEDLeft.begin(LEDLeft.e8Bit) != 0)
-  {
-    Serial.println("FaiLEDRight to initialize the chip , please confirm the chip connection!");
-    delay(1000);
-  }
-  LEDLeft.setDisplayArea();
-  LEDLeft.displayOff();
-
-  entered = false;
-  digit_incr = 0;
-  last_digit_i = 0;
-  x = 0;
-  y = 0;
-  z = 0;
-  t = 0;
-  in = 0;
-  precision = PRECISION;
-  f_pressed = false;
-  g_pressed = false;
-  fix_pressed = false;
-
-  LEDRight.displayOn();
-  display(0.00);
-
+  double temp = x;
+  x = y;
+  y = temp;
+  clear_entered(digit_incr, 
+                in, 
+                entered, 
+                last_digit_i);
 }
 
-void loop()
+
+void process_key(const int &key, 
+                  bool &f_pressed, 
+                  bool &g_pressed, 
+                  bool &entered, 
+                  bool &fix_pressed, 
+                  int *last_digit_key,
+                  int &last_digit_i,
+                  int &digit_incr) 
 {
-  // find pressed_key
-  // ----------------
-  pressed_key = 0;
-  for (int i = 0; i < key_count; i++)
-  {
-    if (digitalRead(key[i]) == HIGH)
-    {
-      if (kcode[i] == 41)
-      {
-        setup();
-        break;
-      }
-      pressed_key = kcode[i];
-      Serial.print("k  = ");
-      Serial.println(pressed_key);
-      delay(100);
-      break;
-    }
-  }
-
-  //    alternate (f) key pressed
-  //    -------------------------
-  if (pressed_key == f_key)
-  {
-    f_pressed = true;
-  }
-
-  //    alternate (g) ley pressed
-  //    -------------------------
-  else if (pressed_key == g_key)
-  {
-    g_pressed = true;
-  }
-
   //    digit key pressed
   //    -----------------
-  else if (pressed_key == digit_key[0] ||
-           pressed_key == digit_key[1] ||
-           pressed_key == digit_key[2] ||
-           pressed_key == digit_key[3] ||
-           pressed_key == digit_key[4] ||
-           pressed_key == digit_key[5] ||
-           pressed_key == digit_key[6] ||
-           pressed_key == digit_key[7] ||
-           pressed_key == digit_key[8] ||
-           pressed_key == digit_key[9])
+  if (is_digit_key(key))
   {
     // after fix prefix
     if (fix_pressed)
     {
       fix_pressed = false;
-      precision = digit_key_value(pressed_key);
+      precision = digit_key_value(key);
       if (precision > 7)
         precision = 7;
+ 
       if (entered)
-      {
         display(in);
-      }
       else
-      {
         display(x);
-      }
 
       // after f prefix
     }
-    else if (f_pressed and pressed_key == digit_key[7])
+    else if (f_pressed and digit_key_value(key) == 7)
     {
-      f_pressed = false;
+      f_pressed= false;
       fix_pressed = true;
 
-      // without prefix
     }
+    // without prefix
     else
     {
       if (last_digit_i < 9)
       {
-        last_digit_key[last_digit_i] = digit_key_value(pressed_key);
+        last_digit_key[last_digit_i] = digit_key_value(key);
         last_digit_i++;
       }
       else
@@ -524,12 +471,12 @@ void loop()
         {
           last_digit_key[last_digit_i] = last_digit_key[last_digit_i + 1];
         }
-        last_digit_key[last_digit_i] = digit_key_value(pressed_key);
+        last_digit_key[last_digit_i] = digit_key_value(key);
       }
-      if ( __FLT_MAX__ - digit_key_value(pressed_key) < in * digit_incr) {
+      if ( __FLT_MAX__ - digit_key_value(key) < in * digit_incr) {
         in = __FLT_MAX__;
       } else {
-        in = in * digit_incr + digit_key_value(pressed_key);
+        in = in * digit_incr + digit_key_value(key);
         digit_incr = 10;
       }
       entered = true;
@@ -537,86 +484,98 @@ void loop()
     }
   }
 
-  //    del key pressed
-  //    ---------------
-  else if (pressed_key == del_key)
-  {
-    if (entered && last_digit_i > 0)
-    {
-      in = round((in - last_digit_key[last_digit_i]) / digit_incr);
-      last_digit_i--;
-      display(in);
-    }
-    else
-    {
-      entered = false;
-      in = 0;
-      x = in;
-      display(x);
-    }
-  }
-
   //    enter key pressed
   //    -----------------
-  else if (pressed_key == enter_key)
+  else if (key == enter_key)
   {
     if (entered)
       x = in;
-    stack_up();
+    stack_up( t, 
+              z, 
+              y, 
+              x, 
+              digit_incr, 
+              in, 
+              entered, 
+              last_digit_i);
     display(x);
   }
 
   //    + key pressed
   //    -------------
-  else if (pressed_key == plus_key)
+  else if (key == plus_key)
   {
     if (entered)
       x = x + in;
     else
       x = y + x;
-    stack_down();
+    stack_down( t,
+                z,
+                y,
+                digit_incr,
+                in, 
+                entered, 
+                last_digit_i);
     display(x);
   }
 
   //    - key pressed
   //    -------------
-  else if (pressed_key == minus_key)
+  else if (key == minus_key)
   {
     if (entered)
       x = x - in;
     else
       x = y - x;
-    stack_down();
+    stack_down( t,
+                z,
+                y,
+                digit_incr,
+                in, 
+                entered, 
+                last_digit_i);
     display(x);
   }
 
   //    * key pressed
   //    -------------
-  else if (pressed_key == mult_key)
+  else if (key == mult_key)
   {
     if (entered)
       x = x * in;
     else
       x = y * x;
-    stack_down();
+    stack_down( t,
+                z,
+                y,
+                digit_incr,
+                in, 
+                entered, 
+                last_digit_i);
     display(x);
   }
 
   //    / key pressed
   //    -------------
-  else if (pressed_key == div_key)
+  else if (key == div_key)
   {
     if (entered)
       x = x / in;
     else
       x = y / x;
-    stack_down();
+    stack_down( t,
+                z,
+                y,
+                digit_incr,
+                in, 
+                entered, 
+                last_digit_i);
     display(x);
   }
 
   //    square root key pressed
   //    -----------------------
-  else if (pressed_key == sqrt_key)
+  else if (key == sqrt_key)
   {
     // x^2
     if (g_pressed)
@@ -638,13 +597,19 @@ void loop()
     }
 
     // replace x and stack down
-    stack_down();
+    stack_down( t,
+                z,
+                y,
+                digit_incr,
+                in, 
+                entered, 
+                last_digit_i);
     display(x);
   }
 
   //    e^x key pressed
   //    ---------------
-  else if (pressed_key == nexp_key)
+  else if (key == nexp_key)
   {
     // ln (x)
     if (g_pressed)
@@ -664,13 +629,19 @@ void loop()
       else
         x = pow(e, x);
     }
-    stack_down();
+    stack_down( t,
+                z,
+                y,
+                digit_incr,
+                in, 
+                entered, 
+                last_digit_i);
     display(x);
   }
 
   //    10^x key pressed
   //    ----------------
-  else if (pressed_key == dexp_key)
+  else if (key == dexp_key)
   {
     // log (x)
     if (g_pressed)
@@ -690,13 +661,19 @@ void loop()
       else
         x = pow(10.0, x);
     }
-    stack_down();
+    stack_down( t,
+                z,
+                y,
+                digit_incr,
+                in, 
+                entered, 
+                last_digit_i);
     display(x);
   }
 
   //    y^x key pressed
   //    ---------------
-  else if (pressed_key == xpow_key)
+  else if (key == xpow_key)
   {
     // %
     if (g_pressed)
@@ -721,13 +698,19 @@ void loop()
       else
         x = pow(y, x);
     }
-    stack_down();
+    stack_down( t,
+                z,
+                y,
+                digit_incr,
+                in, 
+                entered, 
+                last_digit_i);
     display(x);
   }
 
   //    1/x key pressed
   //    ---------------
-  else if (pressed_key == inv_key)
+  else if (key == inv_key)
   {
     // % change
     if (g_pressed)
@@ -747,13 +730,19 @@ void loop()
       else
         x = 1 / x;
     }
-    stack_down();
+    stack_down( t,
+                z,
+                y,
+                digit_incr,
+                in, 
+                entered, 
+                last_digit_i);
     display(x);
   }
 
   //    +/- key pressed
   //    ---------------
-  else if (pressed_key == chs_key)
+  else if (key == chs_key)
   {
     // abs(x)
     if (g_pressed)
@@ -795,7 +784,7 @@ void loop()
 
   //    sin(x) key pressed
   //    ------------------
-  else if (pressed_key == sin_key)
+  else if (key == sin_key)
   {
     // sin-1(x)
     if (g_pressed)
@@ -831,7 +820,7 @@ void loop()
 
   //    cos(x) key pressed
   //    ------------------
-  else if (pressed_key == cos_key)
+  else if (key == cos_key)
   {
     // cos-1(x)
     if (g_pressed)
@@ -867,7 +856,7 @@ void loop()
 
   //    tan(x) key pressed
   //    ------------------
-  else if (pressed_key == tan_key)
+  else if (key == tan_key)
   {
     // cos-1(x)
     if (g_pressed)
@@ -900,9 +889,10 @@ void loop()
       }
     }
   }
+
   //    down key pressed
   //    ----------------
-  else if (pressed_key == down_key)
+  else if (key == down_key)
   {
     // stack roll up
     if (g_pressed)
@@ -910,7 +900,14 @@ void loop()
       g_pressed = false;
       if (entered)
         x = in;
-      stack_roll_up();
+      stack_roll_up(t, 
+                    z, 
+                    y, 
+                    x, 
+                    digit_incr, 
+                    in, 
+                    entered, 
+                    last_digit_i);
       display(x);
 
       // stack roll down
@@ -919,10 +916,161 @@ void loop()
     {
       if (entered)
         x = in;
-      stack_roll_down();
+      stack_roll_down(t, 
+                      z, 
+                      y, 
+                      x, 
+                      digit_incr, 
+                      in, 
+                      entered, 
+                      last_digit_i);
       display(x);
     }
   }
+
+  //    swap key pressed
+  //    ----------------
+  else if (key == swap_key)
+  {
+    // clear x 
+    if (g_pressed)
+    {
+      g_pressed = false;
+      if (entered) 
+        clear_entered(digit_incr, 
+                      in, 
+                      entered, 
+                      last_digit_i);
+      x = 0;
+      display(x);
+
+    // swap xy
+    }
+    else
+    {
+      if (entered) {
+        x = in;
+        clear_entered(digit_incr, 
+                      in, 
+                      entered, 
+                      last_digit_i);
+      }
+      swap_xy(y, 
+              x, 
+              digit_incr, 
+              in, 
+              entered, 
+              last_digit_i);
+      display(x);
+    }
+  }
+}
+
+
+void setup()
+{
+  //Serial.begin(9600);
+  for (int i = 0; i < key_count; i++)
+  {
+    pinMode(key[i], INPUT);
+  }
+
+  while (LEDRight.begin(LEDRight.e8Bit) != 0)
+  {
+    Serial.println("FaiLEDRight to initialize the chip , please confirm the chip connection!");
+    delay(1000);
+  }
+  LEDRight.setDisplayArea();
+  LEDRight.displayOff();
+
+  while (LEDLeft.begin(LEDLeft.e8Bit) != 0)
+  {
+    Serial.println("FaiLEDRight to initialize the chip , please confirm the chip connection!");
+    delay(1000);
+  }
+  LEDLeft.setDisplayArea();
+  LEDLeft.displayOff();
+
+  LEDRight.displayOn();
+  display(x);
+}
+
+void loop()
+{
+  // last entered digits 10 power increment 
+  static int last_digit_key[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  static int last_digit_i = 0;
+  static int digit_incr = 0;
+
+  // enter and key mode 
+  static bool entered = false;
+  static bool f_pressed = false;
+  static bool g_pressed = false;
+  static bool fix_pressed = false;
+
+  // current pressed key
+  static int pressed_key = 0;
+
+  // find pressed_key
+  // ----------------
+  pressed_key = 0;
+  for (int i = 0; i < key_count; i++)
+  {
+    if (digitalRead(key[i]) == HIGH)
+    {
+      if (kcode[i] == 41)
+      {
+        setup();
+        break;
+      }
+      pressed_key = kcode[i];
+      delay(100);
+      break;
+    }
+  }
+
+  //    alternate (f) key pressed
+  //    -------------------------
+  if (pressed_key == f_key)
+  {
+    f_pressed = true;
+  }
+
+  //    alternate (g) ley pressed
+  //    -------------------------
+  else if (pressed_key == g_key)
+  {
+    g_pressed = true;
+  }
+
+  //    del key pressed
+  //    ---------------
+  else if (pressed_key == del_key)
+  {
+    if (entered && last_digit_i > 0)
+    {
+      in = round((in - last_digit_key[last_digit_i]) / digit_incr);
+      last_digit_i--;
+      display(in);
+    }
+    else
+    {
+      entered = false;
+      in = 0;
+      x = in;
+      display(x);
+    }
+  }
+
+  process_key(pressed_key, 
+              f_pressed, 
+              g_pressed, 
+              entered, 
+              fix_pressed, 
+              last_digit_key, 
+              last_digit_i, 
+              digit_incr); 
+
   // wait 1/10 seconds for next key press
-  delay(100);
+  delay(50);
 }
