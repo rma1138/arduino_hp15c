@@ -87,6 +87,7 @@ const int down_key = 33;
 const int swap_key = 34;
 const int gto_key = 22;
 const int eex_key = 26;
+const int decimal_key = 48;
 
 // global mathematical constants
 const double e = 2.718281828;
@@ -152,13 +153,24 @@ bool is_1_operand_key(const int &key)
   case tan_key:
     is_1_operand = true;
     break;
-  case eex_key:
-    is_1_operand = true;
-    break;
   default:
     break;
   }
   return is_1_operand;
+}
+
+bool is_0_operand_key(const int &key)
+{
+  bool is_0_operand = false;
+  switch (key)
+  {
+  case eex_key:
+    is_0_operand = true;
+    break;
+  default:
+    break;
+  }
+  return is_0_operand;
 }
 
 int digit_key_value(const int &key)
@@ -315,14 +327,13 @@ void setDisplayArea(const int &valueSize)
   }
 }
 
-
 void display(const double &value)
 {
   int valueSize = log10(long(abs(value))) + precision + 1;
 
   if (value == 0.0)
     valueSize = 1 + precision;
-  if (value < 1.0 )
+  if (value < 1.0)
     valueSize = 1 + precision;
   if (value < 0)
     valueSize = valueSize + 1;
@@ -333,7 +344,7 @@ void display(const double &value)
   Serial.print(__func__);
   Serial.print(" : valueSize = ");
   Serial.println(valueSize);
-    
+
   setDisplayArea(valueSize);
   double sh = 1;
 
@@ -374,7 +385,8 @@ void display(const double &value)
     dtostrf(d1, (valueSize - 8), 0, str1);
     dtostrf(d2, 9, precision, str2);
 
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 9; i++)
+    {
       if (str2[i] == 0x0)
         break;
       if (str2[i] == ' ')
@@ -392,17 +404,15 @@ void display(const double &value)
   }
 }
 
-
-void clear_entered( int &digit_incr, 
+void clear_entered(int &decimal_incr,
                    bool &entered,
                    int &last_digit_i)
 {
-  digit_incr = 0;
+  decimal_incr = 0;
   in = 0;
   entered = false;
   last_digit_i = 0;
 }
-
 
 void stack_up()
 {
@@ -411,13 +421,11 @@ void stack_up()
   y = x;
 }
 
-
 void stack_drop()
 {
   y = z;
   z = t;
 }
-
 
 void stack_roll_up()
 {
@@ -428,7 +436,6 @@ void stack_roll_up()
   x = temp;
 }
 
-
 void stack_roll_down()
 {
   double temp = x;
@@ -437,7 +444,6 @@ void stack_roll_down()
   z = t;
   t = temp;
 }
-
 
 void swap_xy(const bool &entered)
 {
@@ -591,7 +597,7 @@ void hyperarctangent(const double &a)
   Serial.println(__func__);
   x = log((1 + a) / (1 - a)) / 2;
 }
-void pi_value(const double &a)
+void pi_value()
 {
   Serial.println(__func__);
   x = pi;
@@ -608,7 +614,7 @@ void process_key(const int &key,
                  bool &gto_selected,
                  int *last_digit_key,
                  int &last_digit_i,
-                 int &digit_incr)
+                 int &decimal_incr)
 {
   // GTO (HYP / HYP^-1) key
   // ----------------------
@@ -675,14 +681,21 @@ void process_key(const int &key,
         }
         last_digit_key[last_digit_i] = digit_key_value(key);
       }
-      if (__FLT_MAX__ - digit_key_value(key) < in * digit_incr)
+      if (__FLT_MAX__ - digit_key_value(key) < in * pow(10, decimal_incr))
       {
         in = __FLT_MAX__;
       }
       else
       {
-        in = in * digit_incr + digit_key_value(key);
-        digit_incr = 10;
+        if (decimal_incr >= 0) {
+          in = in * pow(10, decimal_incr) + digit_key_value(key);
+          decimal_incr = 1;
+        }
+        else 
+        { 
+          in = in + digit_key_value(key) * pow(10, decimal_incr);
+          decimal_incr--;
+        }
       }
       entered = true;
       display(in);
@@ -696,7 +709,7 @@ void process_key(const int &key,
     if (entered)
       x = in;
     stack_up();
-    clear_entered(digit_incr,
+    clear_entered(decimal_incr,
                   entered,
                   last_digit_i);
     display(x);
@@ -736,11 +749,12 @@ void process_key(const int &key,
     if (entered)
     {
       oper(x, in);
-      clear_entered(digit_incr,
+      clear_entered(decimal_incr,
                     entered,
                     last_digit_i);
     }
-    else {
+    else
+    {
       oper(y, x);
       stack_drop();
     }
@@ -755,7 +769,7 @@ void process_key(const int &key,
     if (entered)
     {
       dpercent(x, in);
-      clear_entered(digit_incr,
+      clear_entered(decimal_incr,
                     entered,
                     last_digit_i);
     }
@@ -854,9 +868,6 @@ void process_key(const int &key,
       case exp_10_key:
         oper = log_10;
         break;
-      case eex_key:
-        oper = pi_value;
-        break;
       default:
         break;
       }
@@ -883,16 +894,35 @@ void process_key(const int &key,
     }
     if (entered)
     {
-      stack_up();
       oper(in);
+      stack_up();
       display(x);
-      clear_entered(digit_incr,
+      clear_entered(decimal_incr,
                     entered,
                     last_digit_i);
     }
     else
     {
       oper(x);
+      display(x);
+    }
+  }
+
+  //    0 operand key (constants)
+  //    -------------------------
+  else if (is_0_operand_key(key))
+  {
+    if (g_pressed)
+    {
+      g_pressed = false;
+      if (entered)
+      {
+        stack_up();
+        x = in;
+        clear_entered(decimal_incr, entered, last_digit_i);
+      }
+      stack_up();
+      pi_value();
       display(x);
     }
   }
@@ -950,7 +980,7 @@ void process_key(const int &key,
       if (entered)
         x = in;
       stack_roll_up();
-      clear_entered(digit_incr,
+      clear_entered(decimal_incr,
                     entered,
                     last_digit_i);
       display(x);
@@ -962,7 +992,7 @@ void process_key(const int &key,
       if (entered)
         x = in;
       stack_roll_down();
-      clear_entered(digit_incr,
+      clear_entered(decimal_incr,
                     entered,
                     last_digit_i);
       display(x);
@@ -978,7 +1008,7 @@ void process_key(const int &key,
     {
       g_pressed = false;
       if (entered)
-        clear_entered(digit_incr,
+        clear_entered(decimal_incr,
                       entered,
                       last_digit_i);
       x = 0;
@@ -991,7 +1021,7 @@ void process_key(const int &key,
       swap_xy(entered);
       if (entered)
       {
-        clear_entered(digit_incr,
+        clear_entered(decimal_incr,
                       entered,
                       last_digit_i);
       }
@@ -1033,7 +1063,7 @@ void loop()
   // last entered digits 10 power increment
   static int last_digit_key[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   static int last_digit_i = 0;
-  static int digit_incr = 0;
+  static int decimal_incr = 0;
 
   // enter and key mode
   static bool entered = false;
@@ -1087,15 +1117,33 @@ void loop()
   {
     if (entered && last_digit_i > 0)
     {
-      in = round((in - last_digit_key[last_digit_i]) / digit_incr);
+      in = round((in - last_digit_key[last_digit_i]) / decimal_incr);
       last_digit_i--;
       display(in);
     }
     else
     {
-      clear_entered(digit_incr, entered, last_digit_i);
+      clear_entered(decimal_incr, entered, last_digit_i);
       x = 0;
       display(x);
+    }
+  }
+
+  //    decimal point key pressed
+  //    -------------------------
+  else if (pressed_key == decimal_key)
+  {
+    if (entered && last_digit_i > 0)
+    {
+      decimal_incr = -1;
+    }
+    else
+    {
+      stack_up();
+      clear_entered(decimal_incr, entered, last_digit_i);
+      decimal_incr = -1;
+      display(x);
+      entered = true;
     }
 
     //    other keys, which can be used in a pgm
@@ -1113,7 +1161,7 @@ void loop()
                 gto_selected,
                 last_digit_key,
                 last_digit_i,
-                digit_incr);
+                decimal_incr);
 
     Serial.print("t = ");
     Serial.println(t);
