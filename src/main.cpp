@@ -66,6 +66,7 @@ char str2[10];
 char str[16];
 
 // global key codes
+const int on_key = 41;
 const int enter_key = 36;
 const int plus_key = 40;
 const int minus_key = 30;
@@ -94,12 +95,15 @@ const double e = 2.718281828;
 const double pi = 3.141592654;
 
 // global stack variable and precision
-static double x = 0;
-static double y = 0;
-static double z = 0;
-static double t = 0;
-static double in = 0;
+double x = 0;
+double y = 0;
+double z = 0;
+double t = 0;
+double in = 0;
 int precision = PRECISION;
+
+// left or right aligned display
+bool is_left_aligned = true;
 
 bool is_2_operands_key(const int &key)
 {
@@ -200,7 +204,7 @@ bool is_trigono_key(const int &key)
   return is_trigono;
 }
 
-void ledPrint(const int &valueSize,
+void ledPrint(const int &value_size,
               const int &precision,
               const char *buffer,
               DFRobot_LedDisplayModule &ledPtr)
@@ -213,9 +217,9 @@ void ledPrint(const int &valueSize,
                              {0, 0, 0},
                              {0, 0, 0},
                              {0, 0, 0}};
-  int digit_i = valueSize;
+  int digit_i = value_size;
 
-  int len = valueSize;
+  int len = value_size;
   if (precision > 0)
     len++;
 
@@ -245,7 +249,7 @@ void ledPrint(const int &valueSize,
     }
   }
 
-  switch (valueSize)
+  switch (value_size)
   {
   case 1:
     ledPtr.print(digit[0]);
@@ -271,37 +275,64 @@ void ledPrint(const int &valueSize,
   case 8:
     ledPtr.print(digit[0], digit[1], digit[2], digit[3], digit[4], digit[5], digit[6], digit[7]);
     break;
-
   default:
     break;
   }
 }
 
-void setLedDisplayArea(const int &valueSize,
+void setLedDisplayArea(const int &value_size,
                        DFRobot_LedDisplayModule &ledPtr)
 {
-  switch (valueSize)
+  switch (value_size)
   {
   case 1:
-    ledPtr.setDisplayArea(8);
+    if (is_left_aligned) {
+      ledPtr.setDisplayArea(1);                         
+    } else {
+      ledPtr.setDisplayArea(8);
+    }
     break;
   case 2:
-    ledPtr.setDisplayArea(7, 8);
+    if (is_left_aligned) {
+      ledPtr.setDisplayArea(1, 2);                      
+    } else {
+      ledPtr.setDisplayArea(7 ,8);
+    }
     break;
   case 3:
-    ledPtr.setDisplayArea(6, 7, 8);
+    if (is_left_aligned) {
+      ledPtr.setDisplayArea(1, 2, 3);                 
+    } else {
+      ledPtr.setDisplayArea(6, 7, 8);
+    }
     break;
   case 4:
-    ledPtr.setDisplayArea(5, 6, 7, 8);
+    if (is_left_aligned) {
+      ledPtr.setDisplayArea(1, 2, 3, 4);
+    } else {
+      ledPtr.setDisplayArea(5, 6, 7, 8);
+    }
     break;
   case 5:
-    ledPtr.setDisplayArea(4, 5, 6, 7, 8);
+    if (is_left_aligned) {
+      ledPtr.setDisplayArea(1, 2, 3, 4, 5);
+    } else {
+      ledPtr.setDisplayArea(4, 5, 6, 7, 8);
+    }
     break;
   case 6:
-    ledPtr.setDisplayArea(3, 4, 5, 6, 7, 8);
+    if (is_left_aligned) {
+      ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6);
+    } else {
+      ledPtr.setDisplayArea(3, 4, 5, 6, 7, 8);
+    }
     break;
   case 7:
-    ledPtr.setDisplayArea(2, 3, 4, 5, 6, 7, 8);
+    if (is_left_aligned) {
+      ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6, 7);
+    } else {
+      ledPtr.setDisplayArea(2, 3, 4, 5, 6, 7, 8);
+    }
     break;
   case 8:
     ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6, 7, 8);
@@ -312,43 +343,58 @@ void setLedDisplayArea(const int &valueSize,
   }
 }
 
-void setDisplayArea(const int &valueSize)
+void setDisplayArea(const int &value_size)
 {
-  if (valueSize > 8)
+  if (value_size > 8)
   {
-    setLedDisplayArea(8, LEDRight);
-    setLedDisplayArea(valueSize - 8, LEDLeft);
-    LEDLeft.displayOn();
+    if (is_left_aligned) {
+      setLedDisplayArea(8, LEDLeft);
+      setLedDisplayArea(value_size - 8, LEDRight);
+      LEDRight.displayOn();
+    }
+    else {
+      setLedDisplayArea(8, LEDRight);
+      setLedDisplayArea(value_size - 8, LEDLeft);
+      LEDLeft.displayOn();
+    }
   }
   else
   {
-    setLedDisplayArea(valueSize, LEDRight);
-    LEDLeft.displayOff();
+    if (is_left_aligned) {
+      setLedDisplayArea(value_size, LEDLeft);
+      LEDRight.displayOff();
+    } 
+    else {
+      setLedDisplayArea(value_size, LEDRight);
+      LEDLeft.displayOff();
+    }
   }
 }
 
-void display(const double &value)
+void display(const double &value, const int &last_digit_i = 0)
 {
-  int valueSize = log10(long(abs(value))) + precision + 1;
+  int value_size = log10(long(abs(value))) + precision + 1;
+  if (last_digit_i > 0)
+    value_size = last_digit_i;
 
   if (value == 0.0)
-    valueSize = 1 + precision;
+    value_size = 1 + precision;
   if (value < 1.0)
-    valueSize = 1 + precision;
+    value_size = 1 + precision;
   if (value < 0)
-    valueSize = valueSize + 1;
+    value_size = value_size + 1;
 
   Serial.print(__func__);
   Serial.print(" : value = ");
   Serial.println(value);
   Serial.print(__func__);
-  Serial.print(" : valueSize = ");
-  Serial.println(valueSize);
+  Serial.print(" : value_size = ");
+  Serial.println(value_size);
 
-  setDisplayArea(valueSize);
+  setDisplayArea(value_size);
   double sh = 1;
 
-  if (valueSize > 8)
+  if (value_size > 8)
   {
     switch (precision)
     {
@@ -382,7 +428,7 @@ void display(const double &value)
     double d1 = trunc(value / sh);
     double d2 = abs(value - (d1 * sh));
 
-    dtostrf(d1, (valueSize - 8), 0, str1);
+    dtostrf(d1, (value_size - 8), 0, str1);
     dtostrf(d2, 9, precision, str2);
 
     for (int i = 0; i < 9; i++)
@@ -394,13 +440,33 @@ void display(const double &value)
       if (str2[i] == '-')
         str2[i] = '0';
     }
-    ledPrint((valueSize - 8), 0, str1, LEDLeft);
-    ledPrint(8, precision, str2, LEDRight);
+    if (is_left_aligned) {
+      Serial.print("str1 = ");
+      Serial.println(str1);
+      Serial.print("str2 = ");
+      Serial.println(str2);
+      ledPrint((value_size - 8), 0, str1, LEDRight);
+      ledPrint(8, precision, str2, LEDLeft);
+    }
+    else {
+      ledPrint((value_size - 8), 0, str1, LEDLeft);
+      ledPrint(8, precision, str2, LEDRight);
+    }
   }
   else
   {
-    dtostrf(value, valueSize - precision, precision, str2);
-    ledPrint(valueSize, precision, str2, LEDRight);
+    if (is_left_aligned) {
+      dtostrf(value, value_size - precision, precision, str2);
+      Serial.print("str2 = ");
+      Serial.println(str2);
+      Serial.print("precision = ");
+      Serial.println(precision);
+      ledPrint(value_size, precision, str2, LEDLeft);
+    }
+    else {
+      dtostrf(value, value_size - precision, precision, str2);
+      ledPrint(value_size, precision, str2, LEDRight);
+    }
   }
 }
 
@@ -655,7 +721,7 @@ void process_key(const int &key,
         precision = 7;
 
       if (entered)
-        display(in);
+        display(in, last_digit_i);
       else
         display(x);
       // after f prefix
@@ -687,18 +753,19 @@ void process_key(const int &key,
       }
       else
       {
-        if (decimal_incr >= 0) {
+        if (decimal_incr >= 0)
+        {
           in = in * pow(10, decimal_incr) + digit_key_value(key);
           decimal_incr = 1;
         }
-        else 
-        { 
+        else
+        {
           in = in + digit_key_value(key) * pow(10, decimal_incr);
           decimal_incr--;
         }
       }
       entered = true;
-      display(in);
+      display(in, last_digit_i);
     }
   }
 
@@ -758,7 +825,7 @@ void process_key(const int &key,
       oper(y, x);
       stack_drop();
     }
-    display(x);
+    display(x, last_digit_i);
   }
 
   // 2 operands operations under (g_pressed) a 1 operand operation key and no stack drop
@@ -767,7 +834,7 @@ void process_key(const int &key,
   {
     g_pressed = false;
     if (entered)
-    {
+     {
       dpercent(x, in);
       clear_entered(decimal_incr,
                     entered,
@@ -775,7 +842,7 @@ void process_key(const int &key,
     }
     else
       dpercent(y, x);
-    display(x);
+    display(x, last_digit_i);
   }
 
   // 1 operand operations (without stack drop)
@@ -896,7 +963,7 @@ void process_key(const int &key,
     {
       oper(in);
       stack_up();
-      display(x);
+      display(x, last_digit_i);
       clear_entered(decimal_incr,
                     entered,
                     last_digit_i);
@@ -923,7 +990,7 @@ void process_key(const int &key,
       }
       stack_up();
       pi_value();
-      display(x);
+      display(x, last_digit_i);
     }
   }
 
@@ -938,7 +1005,7 @@ void process_key(const int &key,
       if (entered)
       {
         in = abs(in);
-        display(in);
+        display(in, last_digit_i);
       }
       else
       {
@@ -955,7 +1022,7 @@ void process_key(const int &key,
         if (in != 0)
         {
           in = in * -1;
-          display(in);
+          display(in, last_digit_i);
         }
       }
       else
@@ -983,7 +1050,7 @@ void process_key(const int &key,
       clear_entered(decimal_incr,
                     entered,
                     last_digit_i);
-      display(x);
+      display(x, last_digit_i);
 
       // stack roll down
     }
@@ -995,7 +1062,7 @@ void process_key(const int &key,
       clear_entered(decimal_incr,
                     entered,
                     last_digit_i);
-      display(x);
+      display(x, last_digit_i);
     }
   }
 
@@ -1012,7 +1079,7 @@ void process_key(const int &key,
                       entered,
                       last_digit_i);
       x = 0;
-      display(x);
+      display(x, last_digit_i);
 
       // swap xy
     }
@@ -1025,7 +1092,7 @@ void process_key(const int &key,
                       entered,
                       last_digit_i);
       }
-      display(x);
+      display(x, last_digit_i);
     }
   }
 }
@@ -1040,21 +1107,56 @@ void setup()
 
   while (LEDRight.begin(LEDRight.e8Bit) != 0)
   {
-    Serial.println("FaiLEDRight to initialize the chip , please confirm the chip connection!");
+    Serial.println("LED Right: Failed to initialize the chip , please confirm the chip connection!");
     delay(1000);
   }
-  LEDRight.setDisplayArea();
-  LEDRight.displayOff();
+  if (is_left_aligned) {
+    LEDLeft.setDisplayArea();
+    LEDLeft.displayOff();    
+  }
+  else {
+    LEDRight.setDisplayArea();
+    LEDRight.displayOff();    
+  }
 
   while (LEDLeft.begin(LEDLeft.e8Bit) != 0)
   {
-    Serial.println("FaiLEDRight to initialize the chip , please confirm the chip connection!");
+    Serial.println("LED Left: Failed to initialize the chip , please confirm the chip connection!");
     delay(1000);
   }
-  LEDLeft.setDisplayArea();
-  LEDLeft.displayOff();
 
-  LEDRight.displayOn();
+    if (is_left_aligned) {
+    LEDRight.setDisplayArea();
+    LEDRight.displayOff();    
+    LEDLeft.displayOn();
+  }
+  else {
+    LEDLeft.setDisplayArea();
+    LEDLeft.displayOff();    
+    LEDRight.displayOn();
+  }
+
+  delay(100);
+
+  Serial.println(" ");
+  Serial.print("__FLT_MAX__         : ");
+  dtostre(__FLT_MAX__, str, 9, 0);
+  Serial.println(str);
+  Serial.print("__FLT_MIN__         : ");
+  dtostre(__FLT_MIN__, str, 9, 0);
+  Serial.println(str);
+  Serial.print("__FLT_MAX_10_EXP__  : ");
+  Serial.println(__FLT_MAX_10_EXP__);
+  Serial.print("__FLT_MIN_10_EXP__  : ");
+  Serial.println(__FLT_MIN_10_EXP__);
+  Serial.print("__FLT_DIG__         : ");
+  Serial.println(__FLT_DIG__);
+  Serial.print("__FLT_DECIMAL_DIG__ : ");
+  Serial.println(__FLT_DECIMAL_DIG__);
+  Serial.print("__FLT_MANT_DIG__    : ");
+  Serial.println(__FLT_MANT_DIG__);
+  Serial.println();
+
   display(x);
 }
 
@@ -1065,7 +1167,7 @@ void loop()
   static int last_digit_i = 0;
   static int decimal_incr = 0;
 
-  // enter and key mode
+  // pressed key flags
   static bool entered = false;
   static bool f_pressed = false;
   static bool g_pressed = false;
@@ -1073,6 +1175,7 @@ void loop()
   static bool hyp_selected = false;
   static bool hyp_arc_selected = false;
   static bool gto_selected = false;
+  static bool on_pressed = false;
 
   // current pressed key
   static int pressed_key = 0;
@@ -1084,22 +1187,28 @@ void loop()
   {
     if (digitalRead(key[i]) == HIGH)
     {
-      if (kcode[i] == 41)
-      {
-        setup();
-        break;
-      }
       pressed_key = kcode[i];
-      Serial.print("pressed key = ");
-      Serial.println(pressed_key);
       delay(100);
       break;
     }
   }
 
+  if (pressed_key == on_key) {
+    if (is_left_aligned) {
+      is_left_aligned = false;
+      Serial.print("is_left_aligned = ");
+      Serial.println(is_left_aligned);
+      setup();
+    } else {
+      is_left_aligned = true;
+      Serial.print("is_left_aligned = ");
+      Serial.println(is_left_aligned);
+      setup();
+    }
+  }
   //    alternate (f) key pressed
   //    -------------------------
-  if (pressed_key == f_key)
+  else if (pressed_key == f_key)
   {
     f_pressed = true;
   }
@@ -1119,7 +1228,7 @@ void loop()
     {
       in = round((in - last_digit_key[last_digit_i]) / decimal_incr);
       last_digit_i--;
-      display(in);
+      display(in, last_digit_i);
     }
     else
     {
@@ -1142,7 +1251,7 @@ void loop()
       stack_up();
       clear_entered(decimal_incr, entered, last_digit_i);
       decimal_incr = -1;
-      display(x);
+      display(x, last_digit_i);
       entered = true;
     }
 
@@ -1151,6 +1260,9 @@ void loop()
   }
   else if (pressed_key != 0)
   {
+    Serial.print("key = ");
+    Serial.println(pressed_key);
+
     process_key(pressed_key,
                 f_pressed,
                 g_pressed,
@@ -1180,5 +1292,5 @@ void loop()
     Serial.println("--------------------------------------------");
   }
   // wait 1/10 seconds for next key press
-  delay(100);
+  delay(150);
 }
