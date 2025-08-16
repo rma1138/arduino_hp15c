@@ -105,109 +105,123 @@ int precision = PRECISION;
 // left or right aligned display
 bool is_left_aligned = true;
 
-bool is_2_operands_key(const int &key)
+bool is_2_operands_key(const int& key)
 {
-  bool is_2_operands = false;
-  switch (key)
-  {
-  case plus_key:
-    is_2_operands = true;
-    break;
-  case minus_key:
-    is_2_operands = true;
-    break;
-  case mult_key:
-    is_2_operands = true;
-    break;
-  case div_key:
-    is_2_operands = true;
-    break;
-  case xpow_key:
-    is_2_operands = true;
-    break;
-  default:
-    break;
-  }
-  return is_2_operands;
+    bool is_2_operands = false;
+    switch (key)
+    {
+        case plus_key:
+            is_2_operands = true;
+            break;
+
+        case minus_key:
+            is_2_operands = true;
+            break;
+
+        case mult_key:
+            is_2_operands = true;
+            break;
+
+        case div_key:
+            is_2_operands = true;
+            break;
+
+        case xpow_key:
+            is_2_operands = true;
+            break;
+
+        default:
+            break;
+    }
+    return is_2_operands;
 }
 
-bool is_1_operand_key(const int &key)
+bool is_1_operand_key(const int& key)
 {
-  bool is_1_operand = false;
-  switch (key)
-  {
-  case square_root_key:
-    is_1_operand = true;
-    break;
-  case exp_e_key:
-    is_1_operand = true;
-    break;
-  case exp_10_key:
-    is_1_operand = true;
-    break;
-  case inv_key:
-    is_1_operand = true;
-    break;
-  case sin_key:
-    is_1_operand = true;
-    break;
-  case cos_key:
-    is_1_operand = true;
-    break;
-  case tan_key:
-    is_1_operand = true;
-    break;
-  default:
-    break;
-  }
-  return is_1_operand;
+    bool is_1_operand = false;
+    switch (key)
+    {
+        case square_root_key:
+            is_1_operand = true;
+            break;
+
+        case exp_e_key:
+            is_1_operand = true;
+            break;
+
+        case exp_10_key:
+            is_1_operand = true;
+            break;
+
+        case inv_key:
+            is_1_operand = true;
+            break;
+
+        case sin_key:
+            is_1_operand = true;
+            break;
+
+        case cos_key:
+            is_1_operand = true;
+            break;
+
+        case tan_key:
+            is_1_operand = true;
+            break;
+
+        default:
+            break;
+    }
+    return is_1_operand;
 }
 
-bool is_0_operand_key(const int &key)
+bool is_0_operand_key(const int& key)
 {
-  bool is_0_operand = false;
-  switch (key)
-  {
-  case eex_key:
-    is_0_operand = true;
-    break;
-  default:
-    break;
-  }
-  return is_0_operand;
+    bool is_0_operand = false;
+    switch (key)
+    {
+        case eex_key:
+            is_0_operand = true;
+            break;
+
+        default:
+            break;
+    }
+    return is_0_operand;
 }
 
-int digit_key_value(const int &key)
+int digit_key_value(const int& key)
 {
-  static const int digit_key[] = {47, 37, 38, 39, 27, 28, 29, 17, 18, 19};
+    static const int digit_key[] = {47, 37, 38, 39, 27, 28, 29, 17, 18, 19};
   for (int i = 0; i < 10; i++)
   {
-    if (key == digit_key[i])
-      return i;
-  }
-  return -1;
+        if (key == digit_key[i])
+            return i;
+    }
+    
+    return -1;
 }
 
-bool is_digit_key(const int &key)
+bool is_digit_key(const int& key)
 {
-  bool is_digit = false;
-  if (digit_key_value(key) != -1)
-    is_digit = true;
-  return is_digit;
+    bool is_digit = false;
+    if (digit_key_value(key) != -1)
+        is_digit = true;
+
+    return is_digit;
 }
 
-bool is_trigono_key(const int &key)
+bool is_trigono_key(const int& key)
 {
-  bool is_trigono = false;
-  if (key >= 23 and key <= 25)
-    is_trigono = true;
-  return is_trigono;
+    bool is_trigono = false;
+    if (key >= 23 and key <= 25)
+        is_trigono = true;
+
+    return is_trigono;
 }
 
-void ledPrint(const int &value_size,
-              const int &precision,
-              const char *buffer,
-              DFRobot_LedDisplayModule &ledPtr)
+void ledPrint(const int& value_size, const int& precision, const char* buffer,
+    DFRobot_LedDisplayModule& ledPtr)
 {
   static char digit[8][3] = {{0, 0, 0},
                              {0, 0, 0},
@@ -217,458 +231,515 @@ void ledPrint(const int &value_size,
                              {0, 0, 0},
                              {0, 0, 0},
                              {0, 0, 0}};
-  int digit_i = value_size;
+    int digit_i = value_size;
 
-  int len = value_size;
-  if (precision > 0)
-    len++;
+    int len = value_size;
+    if (precision > 0)
+        len++;
 
-  bool point = false;
-  for (int i = len; i >= 0; i--)
-  {
-    if (buffer[i] == '.')
+    bool point = false;
+    for (int i = len; i >= 0; i--)
     {
-      point = true;
+        if (buffer[i] == '.')
+        {
+            point = true;
+        }
+
+        else if (point)
+        {
+            point = false;
+            digit[digit_i][0] = buffer[i];
+            digit[digit_i][1] = '.';
+            digit[digit_i][2] = 0;
+            digit_i--;
+        }
+
+        else
+        {
+            digit[digit_i][0] = buffer[i];
+            digit[digit_i][1] = 0;
+            digit_i--;
+        }
     }
+
+    switch (value_size)
+    {
+        case 1:
+            ledPtr.print(digit[0]);
+            break;
+
+        case 2:
+            ledPtr.print(digit[0], digit[1]);
+            break;
+
+        case 3:
+            ledPtr.print(digit[0], digit[1], digit[2]);
+            break;
+
+        case 4:
+            ledPtr.print(digit[0], digit[1], digit[2], digit[3]);
+            break;
+
+        case 5:
+            ledPtr.print(digit[0], digit[1], digit[2], digit[3], digit[4]);
+            break;
+
+        case 6:
+            ledPtr.print(digit[0], digit[1], digit[2], digit[3], digit[4], digit[5]);
+            break;
+
+        case 7:
+            ledPtr.print(digit[0], digit[1], digit[2], digit[3], digit[4], digit[5], digit[6]);
+            break;
+
+        case 8:
+            ledPtr.print(digit[0], digit[1], digit[2], digit[3], digit[4], digit[5],digit[6], digit[7]);
+            break;
+
+        default:
+            break;
+    }
+}
+
+void setLedDisplayArea(const int& value_size,
+    DFRobot_LedDisplayModule& ledPtr)
+{
+    switch (value_size)
+    {
+        case 1:
+            if (is_left_aligned)
+                ledPtr.setDisplayArea(1);
+
+            else
+                ledPtr.setDisplayArea(8);
+            break;
+
+        case 2:
+            if (is_left_aligned)
+                ledPtr.setDisplayArea(1, 2);
+            else
+                ledPtr.setDisplayArea(7, 8);
+            break;
+
+        case 3:
+            if (is_left_aligned)
+                ledPtr.setDisplayArea(1, 2, 3);
+            else
+                ledPtr.setDisplayArea(6, 7, 8);
+            break;
+
+        case 4:
+            if (is_left_aligned)
+                ledPtr.setDisplayArea(1, 2, 3, 4);
+            else
+                ledPtr.setDisplayArea(5, 6, 7, 8);
+            break;
+
+        case 5:
+            if (is_left_aligned)
+                ledPtr.setDisplayArea(1, 2, 3, 4, 5);
+            else
+                ledPtr.setDisplayArea(4, 5, 6, 7, 8);
+            break;
+
+        case 6:
+            if (is_left_aligned)
+                ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6);
+            else
+                ledPtr.setDisplayArea(3, 4, 5, 6, 7, 8);
+            break;
+
+        case 7:
+            if (is_left_aligned)
+                ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6, 7);
+            else
+                ledPtr.setDisplayArea(2, 3, 4, 5, 6, 7, 8);
+            break;
+
+        case 8:
+            ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6, 7, 8);
+            break;
+
+        default:
+            ledPtr.setDisplayArea();
+            break;
+    }
+}
+
+void setDisplayArea(const int& value_size)
+{
+    if (value_size > 8)
+    {
+        if (is_left_aligned)
+        {
+            setLedDisplayArea(8, LEDLeft);
+            setLedDisplayArea(value_size - 8, LEDRight);
+            LEDRight.displayOn();
+        }
+
+        else
+        {
+            setLedDisplayArea(8, LEDRight);
+            setLedDisplayArea(value_size - 8, LEDLeft);
+            LEDLeft.displayOn();
+        }
+    }
+
+    else if (is_left_aligned)
+    {
+        setLedDisplayArea(value_size, LEDLeft);
+        LEDRight.displayOff();
+    }
+
     else
     {
-      if (point)
-      {
-        point = false;
-        digit[digit_i][0] = buffer[i];
-        digit[digit_i][1] = '.';
-        digit[digit_i][2] = 0;
-        digit_i--;
-      }
-      else
-      {
-        digit[digit_i][0] = buffer[i];
-        digit[digit_i][1] = 0;
-        digit_i--;
-      }
+        setLedDisplayArea(value_size, LEDRight);
+        LEDLeft.displayOff();
     }
-  }
-
-  switch (value_size)
-  {
-  case 1:
-    ledPtr.print(digit[0]);
-    break;
-  case 2:
-    ledPtr.print(digit[0], digit[1]);
-    break;
-  case 3:
-    ledPtr.print(digit[0], digit[1], digit[2]);
-    break;
-  case 4:
-    ledPtr.print(digit[0], digit[1], digit[2], digit[3]);
-    break;
-  case 5:
-    ledPtr.print(digit[0], digit[1], digit[2], digit[3], digit[4]);
-    break;
-  case 6:
-    ledPtr.print(digit[0], digit[1], digit[2], digit[3], digit[4], digit[5]);
-    break;
-  case 7:
-    ledPtr.print(digit[0], digit[1], digit[2], digit[3], digit[4], digit[5], digit[6]);
-    break;
-  case 8:
-    ledPtr.print(digit[0], digit[1], digit[2], digit[3], digit[4], digit[5], digit[6], digit[7]);
-    break;
-  default:
-    break;
-  }
 }
 
-void setLedDisplayArea(const int &value_size,
-                       DFRobot_LedDisplayModule &ledPtr)
+void display(const double& value, const int& last_digit_i = 0)
 {
-  switch (value_size)
-  {
-  case 1:
-    if (is_left_aligned) {
-      ledPtr.setDisplayArea(1);                         
-    } else {
-      ledPtr.setDisplayArea(8);
-    }
-    break;
-  case 2:
-    if (is_left_aligned) {
-      ledPtr.setDisplayArea(1, 2);                      
-    } else {
-      ledPtr.setDisplayArea(7 ,8);
-    }
-    break;
-  case 3:
-    if (is_left_aligned) {
-      ledPtr.setDisplayArea(1, 2, 3);                 
-    } else {
-      ledPtr.setDisplayArea(6, 7, 8);
-    }
-    break;
-  case 4:
-    if (is_left_aligned) {
-      ledPtr.setDisplayArea(1, 2, 3, 4);
-    } else {
-      ledPtr.setDisplayArea(5, 6, 7, 8);
-    }
-    break;
-  case 5:
-    if (is_left_aligned) {
-      ledPtr.setDisplayArea(1, 2, 3, 4, 5);
-    } else {
-      ledPtr.setDisplayArea(4, 5, 6, 7, 8);
-    }
-    break;
-  case 6:
-    if (is_left_aligned) {
-      ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6);
-    } else {
-      ledPtr.setDisplayArea(3, 4, 5, 6, 7, 8);
-    }
-    break;
-  case 7:
-    if (is_left_aligned) {
-      ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6, 7);
-    } else {
-      ledPtr.setDisplayArea(2, 3, 4, 5, 6, 7, 8);
-    }
-    break;
-  case 8:
-    ledPtr.setDisplayArea(1, 2, 3, 4, 5, 6, 7, 8);
-    break;
-  default:
-    ledPtr.setDisplayArea();
-    break;
-  }
-}
+    int value_size = log10(long(abs(value))) + precision + 1;
+    if (last_digit_i > 0)
+        value_size = last_digit_i;
 
-void setDisplayArea(const int &value_size)
-{
-  if (value_size > 8)
-  {
-    if (is_left_aligned) {
-      setLedDisplayArea(8, LEDLeft);
-      setLedDisplayArea(value_size - 8, LEDRight);
-      LEDRight.displayOn();
-    }
-    else {
-      setLedDisplayArea(8, LEDRight);
-      setLedDisplayArea(value_size - 8, LEDLeft);
-      LEDLeft.displayOn();
-    }
-  }
-  else
-  {
-    if (is_left_aligned) {
-      setLedDisplayArea(value_size, LEDLeft);
-      LEDRight.displayOff();
-    } 
-    else {
-      setLedDisplayArea(value_size, LEDRight);
-      LEDLeft.displayOff();
-    }
-  }
-}
+    if (value == 0.0)
+        value_size = 1 + precision;
 
-void display(const double &value, const int &last_digit_i = 0)
-{
-  int value_size = log10(long(abs(value))) + precision + 1;
-  if (last_digit_i > 0)
-    value_size = last_digit_i;
+    if (value < 1.0)
+        value_size = 1 + precision;
 
-  if (value == 0.0)
-    value_size = 1 + precision;
-  if (value < 1.0)
-    value_size = 1 + precision;
-  if (value < 0)
-    value_size = value_size + 1;
+    if (value < 0)
+        value_size = value_size + 1;
 
-  Serial.print(__func__);
-  Serial.print(" : value = ");
-  Serial.println(value);
-  Serial.print(__func__);
-  Serial.print(" : value_size = ");
-  Serial.println(value_size);
+    Serial.print(__func__);
+    Serial.print(" : value = ");
+    Serial.println(value);
+    Serial.print(__func__);
+    Serial.print(" : value_size = ");
+    Serial.println(value_size);
 
-  setDisplayArea(value_size);
-  double sh = 1;
+    setDisplayArea(value_size);
+    double sh = 1;
 
-  if (value_size > 8)
-  {
-    switch (precision)
+    if (value_size > 8)
     {
-    case 0:
-      sh = 100000000;
-      break;
-    case 1:
-      sh = 10000000;
-      break;
-    case 2:
-      sh = 1000000;
-      break;
-    case 3:
-      sh = 100000;
-      break;
-    case 4:
-      sh = 10000;
-      break;
-    case 5:
-      sh = 1000;
-      break;
-    case 6:
-      sh = 100;
-      break;
-    case 7:
-      sh = 10;
-      break;
-    default:
-      break;
+        switch (precision)
+        {
+            case 0:
+                sh = 100000000;
+                break;
+
+            case 1:
+                sh = 10000000;
+                break;
+
+            case 2:
+                sh = 1000000;
+                break;
+
+            case 3:
+                sh = 100000;
+                break;
+
+            case 4:
+                sh = 10000;
+                break;
+
+            case 5:
+                sh = 1000;
+                break;
+
+            case 6:
+                sh = 100;
+                break;
+
+            case 7:
+                sh = 10;
+                break;
+
+            default:
+                break;
+        }
+
+        double d1 = trunc(value / sh);
+        double d2 = abs(value - (d1 * sh));
+        dtostrf(d1, value_size - 8, 0, str1);
+        dtostrf(d2, 9, precision, str2);
+        for (int i = 0; i < 9; i++)
+        {
+            if (str2[i] == 0x0)
+                break;
+
+            if (str2[i] == ' ')
+                str2[i] = '0';
+
+            if (str2[i] == '-')
+                str2[i] = '0';
+        }
+
+        if (is_left_aligned)
+        {
+            Serial.print("str1 = ");
+            Serial.println(str1);
+            Serial.print("str2 = ");
+            Serial.println(str2);
+            ledPrint(value_size - 8, 0, str1, LEDRight);
+            ledPrint(8, precision, str2, LEDLeft);
+        }
+        
+        else
+        {
+            ledPrint(value_size - 8, 0, str1, LEDLeft);
+            ledPrint(8, precision, str2, LEDRight);
+        }
     }
-    double d1 = trunc(value / sh);
-    double d2 = abs(value - (d1 * sh));
 
-    dtostrf(d1, (value_size - 8), 0, str1);
-    dtostrf(d2, 9, precision, str2);
-
-    for (int i = 0; i < 9; i++)
+    else if (is_left_aligned)
     {
-      if (str2[i] == 0x0)
-        break;
-      if (str2[i] == ' ')
-        str2[i] = '0';
-      if (str2[i] == '-')
-        str2[i] = '0';
+        dtostrf(value, value_size - precision, precision, str2);
+        Serial.print("str2 = ");
+        Serial.println(str2);
+        Serial.print("precision = ");
+        Serial.println(precision);
+        ledPrint(value_size, precision, str2, LEDLeft);
     }
-    if (is_left_aligned) {
-      Serial.print("str1 = ");
-      Serial.println(str1);
-      Serial.print("str2 = ");
-      Serial.println(str2);
-      ledPrint((value_size - 8), 0, str1, LEDRight);
-      ledPrint(8, precision, str2, LEDLeft);
+
+    else
+    {
+        dtostrf(value, value_size - precision, precision, str2);
+        ledPrint(value_size, precision, str2, LEDRight);
     }
-    else {
-      ledPrint((value_size - 8), 0, str1, LEDLeft);
-      ledPrint(8, precision, str2, LEDRight);
-    }
-  }
-  else
-  {
-    if (is_left_aligned) {
-      dtostrf(value, value_size - precision, precision, str2);
-      Serial.print("str2 = ");
-      Serial.println(str2);
-      Serial.print("precision = ");
-      Serial.println(precision);
-      ledPrint(value_size, precision, str2, LEDLeft);
-    }
-    else {
-      dtostrf(value, value_size - precision, precision, str2);
-      ledPrint(value_size, precision, str2, LEDRight);
-    }
-  }
 }
 
-void clear_entered(int &decimal_incr,
-                   bool &entered,
-                   int &last_digit_i)
+void clear_entered(int& decimal_incr, bool& entered, int& last_digit_i)
 {
-  decimal_incr = 0;
-  in = 0;
-  entered = false;
-  last_digit_i = 0;
+    decimal_incr = 0;
+    in = 0;
+    entered = false;
+    last_digit_i = 0;
 }
 
 void stack_up()
 {
-  t = z;
-  z = y;
-  y = x;
+    t = z;
+    z = y;
+    y = x;
 }
 
 void stack_drop()
 {
-  y = z;
-  z = t;
+    y = z;
+    z = t;
 }
 
 void stack_roll_up()
 {
-  double temp = t;
-  t = z;
-  z = y;
-  y = x;
-  x = temp;
+    double temp = t;
+    t = z;
+    z = y;
+    y = x;
+    x = temp;
 }
 
 void stack_roll_down()
 {
-  double temp = x;
-  x = y;
-  y = z;
-  z = t;
-  t = temp;
+    double temp = x;
+    x = y;
+    y = z;
+    z = t;
+    t = temp;
 }
 
-void swap_xy(const bool &entered)
+void swap_xy(const bool& entered)
 {
-  double temp;
-  if (entered)
-  {
-    temp = in;
-    t = z;
-    z = y;
-    y = temp;
-  }
-  else
-  {
-    temp = x;
-    x = y;
-    y = temp;
-  }
+    double temp;
+    if (entered)
+    {
+        temp = in;
+        t = z;
+        z = y;
+        y = temp;
+    }
+    else
+    {
+        temp = x;
+        x = y;
+        y = temp;
+    }
 }
 
 // operations with 2 operands
-void plus(const double &a, const double &b)
+void plus(const double& a, const double& b)
 {
-  Serial.println(__func__);
-  x = a + b;
+    Serial.println(__func__);
+    x = a + b;
 }
-void minus(const double &a, const double &b)
+
+void minus(const double& a, const double& b)
 {
-  Serial.println(__func__);
-  x = a - b;
+    Serial.println(__func__);
+    x = a - b;
 }
-void divide(const double &a, const double &b)
+
+void divide(const double& a, const double& b)
 {
-  Serial.println(__func__);
-  x = a / b;
+    Serial.println(__func__);
+    x = a / b;
 }
-void mult(const double &a, const double &b)
+
+void mult(const double& a, const double& b)
 {
-  Serial.println(__func__);
-  x = a * b;
+    Serial.println(__func__);
+    x = a * b;
 }
-void xpow(const double &a, const double &b)
+
+void xpow(const double& a, const double& b)
 {
-  Serial.println(__func__);
-  x = pow(a, b);
+    Serial.println(__func__);
+    x = pow(a, b);
 }
-void percent(const double &a, const double &b)
+
+void percent(const double& a, const double& b)
 {
-  Serial.println(__func__);
-  x = a * (b / 100);
+    Serial.println(__func__);
+    x = a * (b / 100);
 }
-void dpercent(const double &a, const double &b)
+
+void dpercent(const double& a, const double& b)
 {
-  Serial.println(__func__);
-  x = ((b - a) / a) * 100;
+    Serial.println(__func__);
+    x = ((b - a) / a) * 100;
 }
-void noop_2(const double &a, const double &b) { Serial.println(__func__); }
+
+void noop_2(const double& a, const double& b) { Serial.println(__func__); }
 
 // operations with 1 operand
-void square(const double &a)
+void square(const double& a)
 {
-  Serial.println(__func__);
-  x = sq(a);
+    Serial.println(__func__);
+    x = sq(a);
 }
-void square_root(const double &a)
+
+void square_root(const double& a)
 {
-  Serial.println(__func__);
-  x = sqrt(a);
+    Serial.println(__func__);
+    x = sqrt(a);
 }
-void log_e(const double &a)
+
+void log_e(const double& a)
 {
-  Serial.println(__func__);
-  x = log(a);
+    Serial.println(__func__);
+    x = log(a);
 }
-void exp_e(const double &a)
+
+void exp_e(const double& a)
 {
-  Serial.println(__func__);
-  x = pow(e, a);
+    Serial.println(__func__);
+    x = pow(e, a);
 }
-void log_10(const double &a)
+
+void log_10(const double& a)
 {
-  Serial.println(__func__);
-  x = log10(a);
+    Serial.println(__func__);
+    x = log10(a);
 }
-void exp_10(const double &a)
+
+void exp_10(const double& a)
 {
-  Serial.println(__func__);
-  x = pow(10.0, a);
+    Serial.println(__func__);
+    x = pow(10.0, a);
 }
-void inverse(const double &a)
+
+void inverse(const double& a)
 {
-  Serial.println(__func__);
-  x = 1 / a;
+    Serial.println(__func__);
+    x = 1 / a;
 }
-void sine(const double &a)
+
+void sine(const double& a)
 {
-  Serial.println(__func__);
-  x = sin(a);
+    Serial.println(__func__);
+    x = sin(a);
 }
-void cosine(const double &a)
+
+void cosine(const double& a)
 {
-  Serial.println(__func__);
-  x = cos(a);
+    Serial.println(__func__);
+    x = cos(a);
 }
-void tangent(const double &a)
+
+void tangent(const double& a)
 {
-  Serial.println(__func__);
-  x = tan(a);
+    Serial.println(__func__);
+    x = tan(a);
 }
-void arcsine(const double &a)
+
+void arcsine(const double& a)
 {
-  Serial.println(__func__);
-  x = asin(a);
+    Serial.println(__func__);
+    x = asin(a);
 }
-void arccosine(const double &a)
+
+void arccosine(const double& a)
 {
-  Serial.println(__func__);
-  x = acos(a);
+    Serial.println(__func__);
+    x = acos(a);
 }
-void arctangent(const double &a)
+
+void arctangent(const double& a)
 {
-  Serial.println(__func__);
-  x = atan(a);
+    Serial.println(__func__);
+    x = atan(a);
 }
-void hypersine(const double &a)
+
+void hypersine(const double& a)
 {
-  Serial.println(__func__);
-  x = sinh(a);
+    Serial.println(__func__);
+    x = sinh(a);
 }
-void hypercosine(const double &a)
+
+void hypercosine(const double& a)
 {
-  Serial.println(__func__);
-  x = cosh(a);
+    Serial.println(__func__);
+    x = cosh(a);
 }
-void hypertangent(const double &a)
+
+void hypertangent(const double& a)
 {
-  Serial.println(__func__);
-  x = tanh(a);
+    Serial.println(__func__);
+    x = tanh(a);
 }
-void hyperarcsine(const double &a)
+
+void hyperarcsine(const double& a)
 {
-  Serial.println(__func__);
-  x = log(a + sqrt(sq(a) + 1));
+    Serial.println(__func__);
+    x = log(a + sqrt(sq(a) + 1));
 }
-void hyperarccosine(const double &a)
+
+void hyperarccosine(const double& a)
 {
-  Serial.println(__func__);
-  x = log(a + sqrt(sq(a) - 1));
+    Serial.println(__func__);
+    x = log(a + sqrt(sq(a) - 1));
 }
-void hyperarctangent(const double &a)
+
+void hyperarctangent(const double& a)
 {
-  Serial.println(__func__);
-  x = log((1 + a) / (1 - a)) / 2;
+    Serial.println(__func__);
+    x = log((1 + a) / (1 - a)) / 2;
 }
+
 void pi_value()
 {
-  Serial.println(__func__);
-  x = pi;
+    Serial.println(__func__);
+    x = pi;
 }
-void noop_1(const double &a) { Serial.println("Operation not defined. Please fix the bug!"); }
+
+void noop_1(const double& a)
+{
+    Serial.println("Operation not defined. Please fix the bug!");
+}
 
 void process_key(const int &key,
                  bool &f_pressed,
@@ -682,615 +753,651 @@ void process_key(const int &key,
                  int &last_digit_i,
                  int &decimal_incr)
 {
-  // GTO (HYP / HYP^-1) key
-  // ----------------------
-  if (key == gto_key)
-  {
-    if (f_pressed)
+    // GTO (HYP / HYP^-1) key
+    // ----------------------
+    if (key == gto_key)
     {
-      // Hperbolic - Trig functions
-      f_pressed = false;
-      hyp_selected = true;
-    }
-    else if (g_pressed)
-    {
-      // Hyperbolic Arc - Trig functions
-      g_pressed = false;
-      hyp_arc_selected = true;
-    }
-    else
-    {
-      // goto operation
-      gto_selected = true;
-    }
-  }
-
-  //    Digit key pressed
-  //    -----------------
-  else if (is_digit_key(key))
-  {
-    Serial.print("digit entered = ");
-    Serial.println(digit_key_value(key));
-
-    // after fix prefix
-    if (fix_selected)
-    {
-      fix_selected = false;
-      precision = digit_key_value(key);
-      if (precision > 7)
-        precision = 7;
-
-      if (entered)
-        display(in, last_digit_i);
-      else
-        display(x);
-      // after f prefix
-    }
-    else if (f_pressed and digit_key_value(key) == 7)
-    {
-      f_pressed = false;
-      fix_selected = true;
-    }
-    // without prefix
-    else
-    {
-      if (last_digit_i < 9)
-      {
-        last_digit_key[last_digit_i] = digit_key_value(key);
-        last_digit_i++;
-      }
-      else
-      {
-        for (last_digit_i = 0; last_digit_i < 9; last_digit_i++)
+        if (f_pressed)
         {
-          last_digit_key[last_digit_i] = last_digit_key[last_digit_i + 1];
+            // Hperbolic - Trig functions
+            f_pressed = false;
+            hyp_selected = true;
         }
-        last_digit_key[last_digit_i] = digit_key_value(key);
-      }
-      if (__FLT_MAX__ - digit_key_value(key) < in * pow(10, decimal_incr))
-      {
-        in = __FLT_MAX__;
-      }
-      else
-      {
-        if (decimal_incr >= 0)
+
+        else if (g_pressed)
         {
-          in = in * pow(10, decimal_incr) + digit_key_value(key);
-          decimal_incr = 1;
+            // Hyperbolic Arc - Trig functions
+            g_pressed = false;
+            hyp_arc_selected = true;
         }
+
         else
         {
-          in = in + digit_key_value(key) * pow(10, decimal_incr);
-          decimal_incr--;
+             // goto operation
+            gto_selected = true;
         }
-      }
-      entered = true;
-      display(in, last_digit_i);
     }
-  }
 
-  //    enter key pressed
-  //    -----------------
-  else if (key == enter_key)
-  {
-    if (entered)
-      x = in;
-    stack_up();
-    clear_entered(decimal_incr,
-                  entered,
-                  last_digit_i);
-    display(x);
-  }
+    //    Digit key pressed
+    //    -----------------
+    else if (is_digit_key(key))
+    {
+        Serial.print("digit entered = ");
+        Serial.println(digit_key_value(key));
 
-  // 2 operands operations with stack drop
-  // -------------------------------------
-  else if (is_2_operands_key(key))
-  {
-    void (*oper)(const double &, const double &) = noop_2;
-    switch (key)
-    {
-    case plus_key:
-      oper = plus;
-      break;
-    case minus_key:
-      oper = minus;
-      break;
-    case div_key:
-      oper = divide;
-      break;
-    case mult_key:
-      oper = mult;
-      break;
-    case xpow_key:
-      if (g_pressed)
-      {
-        g_pressed = false;
-        oper = percent;
-      }
-      else
-        oper = xpow;
-      break;
-    default:
-      break;
-    }
-    if (entered)
-    {
-      oper(x, in);
-      clear_entered(decimal_incr,
-                    entered,
-                    last_digit_i);
-    }
-    else
-    {
-      oper(y, x);
-      stack_drop();
-    }
-    display(x, last_digit_i);
-  }
+        // after fix prefix
+        if (fix_selected)
+        {
+            fix_selected = false;
+            precision = digit_key_value(key);
+            if (precision > 7)
+                precision = 7;
 
-  // 2 operands operations under (g_pressed) a 1 operand operation key and no stack drop
-  // -----------------------------------------------------------------------------------
-  else if (g_pressed and key == inv_key)
-  {
-    g_pressed = false;
-    if (entered)
-     {
-      dpercent(x, in);
-      clear_entered(decimal_incr,
-                    entered,
-                    last_digit_i);
-    }
-    else
-      dpercent(y, x);
-    display(x, last_digit_i);
-  }
+            if (entered)
+                display(in, last_digit_i);
+            
+            else
+                display(x);
+        }
 
-  // 1 operand operations (without stack drop)
-  // -----------------------------------------
-  else if (is_1_operand_key(key))
-  {
-    void (*oper)(const double &);
-    if (is_trigono_key(key) and hyp_arc_selected)
-    {
-      hyp_arc_selected = false;
-      switch (key)
-      {
-      case sin_key:
-        oper = hyperarcsine;
-        break;
-      case cos_key:
-        oper = hyperarccosine;
-        break;
-      case tan_key:
-        oper = hyperarctangent;
-        break;
-      default:
-        break;
-      }
-    }
-    else if (is_trigono_key(key) and hyp_selected)
-    {
-      hyp_selected = false;
-      switch (key)
-      {
-      case sin_key:
-        oper = hypersine;
-        break;
-      case cos_key:
-        oper = hypercosine;
-        break;
-      case tan_key:
-        oper = hypertangent;
-        break;
-      default:
-        break;
-      }
-    }
-    else if (is_trigono_key(key) and g_pressed)
-    {
-      g_pressed = false;
-      switch (key)
-      {
-      case sin_key:
-        oper = arcsine;
-        break;
-      case cos_key:
-        oper = arccosine;
-        break;
-      case tan_key:
-        oper = arctangent;
-        break;
-      default:
-        break;
-      }
-    }
-    else if (is_trigono_key(key))
-    {
-      switch (key)
-      {
-      case sin_key:
-        oper = sine;
-        break;
-      case cos_key:
-        oper = cosine;
-        break;
-      case tan_key:
-        oper = tangent;
-        break;
-      default:
-        break;
-      }
-    }
-    else if (g_pressed)
-    {
-      g_pressed = false;
-      switch (key)
-      {
-      case square_root_key:
-        oper = square;
-        break;
-      case exp_e_key:
-        oper = log_e;
-        break;
-      case exp_10_key:
-        oper = log_10;
-        break;
-      default:
-        break;
-      }
-    }
-    else
-    {
-      switch (key)
-      {
-      case square_root_key:
-        oper = square_root;
-        break;
-      case exp_e_key:
-        oper = exp_e;
-        break;
-      case exp_10_key:
-        oper = exp_10;
-        break;
-      case inv_key:
-        oper = inverse;
-        break;
-      default:
-        break;
-      }
-    }
-    if (entered)
-    {
-      oper(in);
-      stack_up();
-      display(x, last_digit_i);
-      clear_entered(decimal_incr,
-                    entered,
-                    last_digit_i);
-    }
-    else
-    {
-      oper(x);
-      display(x);
-    }
-  }
+        // after f prefix
+        else if (f_pressed and digit_key_value(key) == 7)
+        {
+            f_pressed = false;
+            fix_selected = true;
+        }
 
-  //    0 operand key (constants)
-  //    -------------------------
-  else if (is_0_operand_key(key))
-  {
-    if (g_pressed)
+        // without prefix
+        else
+        {
+            if (last_digit_i < 9)
+            {
+                last_digit_key[last_digit_i] = digit_key_value(key);
+                last_digit_i++;
+            }
+
+            else
+            {
+                for (last_digit_i = 0; last_digit_i < 9; last_digit_i++)
+                    last_digit_key[last_digit_i] = last_digit_key[last_digit_i + 1];
+                last_digit_key[last_digit_i] = digit_key_value(key);
+            }
+
+            if (__FLT_MAX__ - digit_key_value(key) < in * pow(10, decimal_incr))
+            {
+                in = __FLT_MAX__;
+            }
+
+            else if (decimal_incr >= 0)
+            {
+                in = in * pow(10, decimal_incr) + digit_key_value(key);
+                decimal_incr = 1;
+            }
+
+            else
+            {
+                in = in + digit_key_value(key) * pow(10, decimal_incr);
+                decimal_incr--;
+            }
+
+            entered = true;
+            display(in, last_digit_i);
+        }
+    }
+
+    // enter key pressed
+    // -----------------
+    else if (key == enter_key)
     {
-      g_pressed = false;
-      if (entered)
-      {
+        if (entered)
+            x = in;
         stack_up();
-        x = in;
         clear_entered(decimal_incr, entered, last_digit_i);
-      }
-      stack_up();
-      pi_value();
-      display(x, last_digit_i);
-    }
-  }
-
-  //    +/- key pressed
-  //    ---------------
-  else if (key == chs_key)
-  {
-    // abs(x)
-    if (g_pressed)
-    {
-      g_pressed = false;
-      if (entered)
-      {
-        in = abs(in);
-        display(in, last_digit_i);
-      }
-      else
-      {
-        x = abs(x);
         display(x);
-      }
-
-      // +/- (CHS)
     }
-    else
+
+    // 2 operands operations with stack drop
+    // -------------------------------------
+    else if (is_2_operands_key(key))
     {
-      if (entered)
-      {
-        if (in != 0)
+        void (*oper)(const double&, const double&) = noop_2;
+        switch (key)
         {
-          in = in * -1;
-          display(in, last_digit_i);
+            case plus_key:
+                oper = plus;
+                break;
+
+            case minus_key:
+                oper = minus;
+                break;
+
+            case div_key:
+                oper = divide;
+                break;
+
+            case mult_key:
+                oper = mult;
+                break;
+
+            case xpow_key:
+                if (g_pressed)
+                {
+                    g_pressed = false;
+                    oper = percent;
+                }
+
+                else
+                {
+                    oper = xpow;
+                }
+                break;
+
+            default:
+                break;
         }
-      }
-      else
-      {
-        if (x != 0)
+
+        if (entered)
         {
-          x = x * -1;
-          display(x);
+            oper(x, in);
+            clear_entered(decimal_incr, entered, last_digit_i);
         }
-      }
-    }
-  }
 
-  //    down key pressed
-  //    ----------------
-  else if (key == down_key)
-  {
-    // stack roll up
-    if (g_pressed)
-    {
-      g_pressed = false;
-      if (entered)
-        x = in;
-      stack_roll_up();
-      clear_entered(decimal_incr,
-                    entered,
-                    last_digit_i);
-      display(x, last_digit_i);
+        else
+        {
+            oper(y, x);
+            stack_drop();
+        }
+        display(x, last_digit_i);
+    }
 
-      // stack roll down
-    }
-    else
+    // 2 operands operations under (g_pressed) a 1 operand operation key and no
+    // stack drop
+    // ------------------------------------------------------------------------
+    else if (g_pressed and key == inv_key)
     {
-      if (entered)
-        x = in;
-      stack_roll_down();
-      clear_entered(decimal_incr,
-                    entered,
-                    last_digit_i);
-      display(x, last_digit_i);
-    }
-  }
+        g_pressed = false;
+        if (entered)
+        {
+            dpercent(x, in);
+            clear_entered(decimal_incr, entered, last_digit_i);
+        }
 
-  //    swap key pressed
-  //    ----------------
-  else if (key == swap_key)
-  {
-    // clear x
-    if (g_pressed)
-    {
-      g_pressed = false;
-      if (entered)
-        clear_entered(decimal_incr,
-                      entered,
-                      last_digit_i);
-      x = 0;
-      display(x, last_digit_i);
+        else
+        {
+            dpercent(y, x);
+        }
+        display(x, last_digit_i);
+    }
 
-      // swap xy
-    }
-    else
+    // 1 operand operations (without stack drop)
+    // -----------------------------------------
+    else if (is_1_operand_key(key))
     {
-      swap_xy(entered);
-      if (entered)
-      {
-        clear_entered(decimal_incr,
-                      entered,
-                      last_digit_i);
-      }
-      display(x, last_digit_i);
+        void (*oper)(const double&);
+        if (is_trigono_key(key) and hyp_arc_selected)
+        {
+            hyp_arc_selected = false;
+            switch (key)
+            {
+
+                case sin_key:
+                    oper = hyperarcsine;
+                    break;
+
+                case cos_key:
+                    oper = hyperarccosine;
+                    break;
+
+                case tan_key:
+                    oper = hyperarctangent;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        else if (is_trigono_key(key) and hyp_selected)
+        {
+            hyp_selected = false;
+            switch (key)
+            {
+                case sin_key:
+                    oper = hypersine;
+                    break;
+
+                case cos_key:
+                    oper = hypercosine;
+                    break;
+
+                case tan_key:
+                    oper = hypertangent;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        else if (is_trigono_key(key) and g_pressed)
+        {
+            g_pressed = false;
+            switch (key)
+            {
+                case sin_key:
+                    oper = arcsine;
+                    break;
+
+                case cos_key:
+                    oper = arccosine;
+                    break;
+
+                case tan_key:
+                    oper = arctangent;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        else if (is_trigono_key(key))
+        {
+            switch (key)
+            {
+                case sin_key:
+                    oper = sine;
+                    break;
+
+                case cos_key:
+                    oper = cosine;
+                    break;
+
+                case tan_key:
+                    oper = tangent;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        else if (g_pressed)
+        {
+            g_pressed = false;
+            switch (key)
+            {
+                case square_root_key:
+                    oper = square;
+                    break;
+
+                case exp_e_key:
+                    oper = log_e;
+                    break;
+
+                case exp_10_key:
+                    oper = log_10;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        else
+        {
+            switch (key)
+            {
+                case square_root_key:
+                    oper = square_root;
+                    break;
+
+                case exp_e_key:
+                    oper = exp_e;
+                    break;
+
+                case exp_10_key:
+                    oper = exp_10;
+                    break;
+
+                case inv_key:
+                    oper = inverse;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        if (entered)
+        {
+            oper(in);
+            stack_up();
+            display(x, 0);
+            clear_entered(decimal_incr, entered, last_digit_i);
+        }
+
+        else
+        {
+            oper(x);
+            display(x);
+        }
     }
-  }
+
+    // 0 operand key (constants)
+    // -------------------------
+    else if (is_0_operand_key(key))
+    {
+        if (g_pressed)
+        {
+            g_pressed = false;
+            if (entered)
+            {
+                stack_up();
+                x = in;
+                clear_entered(decimal_incr, entered, last_digit_i);
+            }
+
+            stack_up();
+            pi_value();
+            display(x, last_digit_i);
+        }
+    }
+
+    // +/- key pressed
+    // ---------------
+    else if (key == chs_key)
+    {
+        // abs(x)
+        if (g_pressed)
+        {
+            g_pressed = false;
+            if (entered)
+            {
+                in = abs(in);
+                display(in, last_digit_i);
+            }
+
+            else
+            {
+                x = abs(x);
+                display(x);
+            }
+
+        }
+
+        // +/- (CHS)
+        else if (entered)
+        {
+            if (in != 0)
+            {
+                in = in * -1;
+                display(in, last_digit_i);
+            }
+        }
+
+        else if (x != 0)
+        {
+            x = x * -1;
+            display(x);
+        }
+    }
+
+    // down key pressed
+    // ----------------
+    else if (key == down_key)
+    {
+        // stack roll up
+        if (g_pressed)
+        {
+            g_pressed = false;
+            if (entered)
+                x = in;
+
+            stack_roll_up();
+            clear_entered(decimal_incr, entered, last_digit_i);
+            display(x, last_digit_i);
+
+            // stack roll down
+        }
+
+        else
+        {
+            if (entered)
+                x = in;
+
+            stack_roll_down();
+            clear_entered(decimal_incr, entered, last_digit_i);
+            display(x, last_digit_i);
+        }
+    }
+
+    //    swap key pressed
+    //    ----------------
+    else if (key == swap_key)
+    {
+        // clear x
+        if (g_pressed)
+        {
+            g_pressed = false;
+            if (entered)
+                clear_entered(decimal_incr, entered, last_digit_i);
+
+            x = 0;
+            display(x, last_digit_i);
+        }
+
+        // swap xy
+        else
+        {
+            swap_xy(entered);
+            if (entered)
+                clear_entered(decimal_incr, entered, last_digit_i);
+
+            display(x, last_digit_i);
+        }
+    }
 }
 
 void setup()
 {
-  Serial.begin(9600);
-  for (int i = 0; i < key_count; i++)
-  {
-    pinMode(key[i], INPUT);
-  }
+    Serial.begin(9600);
+    for (int i = 0; i < key_count; i++)
+        pinMode(key[i], INPUT);
 
-  while (LEDRight.begin(LEDRight.e8Bit) != 0)
-  {
-    Serial.println("LED Right: Failed to initialize the chip , please confirm the chip connection!");
-    delay(1000);
-  }
-  if (is_left_aligned) {
-    LEDLeft.setDisplayArea();
-    LEDLeft.displayOff();    
-  }
-  else {
-    LEDRight.setDisplayArea();
-    LEDRight.displayOff();    
-  }
+    while (LEDRight.begin(LEDRight.e8Bit) != 0)
+    {
+        Serial.println("LED Right: Failed to initialize the chip , please confirm "
+            "the chip connection!");
+        delay(1000);
+    }
 
-  while (LEDLeft.begin(LEDLeft.e8Bit) != 0)
-  {
-    Serial.println("LED Left: Failed to initialize the chip , please confirm the chip connection!");
-    delay(1000);
-  }
+    if (is_left_aligned)
+    {
+        LEDLeft.setDisplayArea();
+        LEDLeft.displayOff();
+    }
 
-    if (is_left_aligned) {
-    LEDRight.setDisplayArea();
-    LEDRight.displayOff();    
-    LEDLeft.displayOn();
-  }
-  else {
-    LEDLeft.setDisplayArea();
-    LEDLeft.displayOff();    
-    LEDRight.displayOn();
-  }
+    else
+    {
+        LEDRight.setDisplayArea();
+        LEDRight.displayOff();
+    }
 
-  delay(100);
+    while (LEDLeft.begin(LEDLeft.e8Bit) != 0)
+    {
+        Serial.println("LED Left: Failed to initialize the chip , please confirm "
+            "the chip connection!");
+        delay(1000);
+    }
 
-  Serial.println(" ");
-  Serial.print("__FLT_MAX__         : ");
-  dtostre(__FLT_MAX__, str, 9, 0);
-  Serial.println(str);
-  Serial.print("__FLT_MIN__         : ");
-  dtostre(__FLT_MIN__, str, 9, 0);
-  Serial.println(str);
-  Serial.print("__FLT_MAX_10_EXP__  : ");
-  Serial.println(__FLT_MAX_10_EXP__);
-  Serial.print("__FLT_MIN_10_EXP__  : ");
-  Serial.println(__FLT_MIN_10_EXP__);
-  Serial.print("__FLT_DIG__         : ");
-  Serial.println(__FLT_DIG__);
-  Serial.print("__FLT_DECIMAL_DIG__ : ");
-  Serial.println(__FLT_DECIMAL_DIG__);
-  Serial.print("__FLT_MANT_DIG__    : ");
-  Serial.println(__FLT_MANT_DIG__);
-  Serial.println();
+    if (is_left_aligned)
+    {
+        LEDRight.setDisplayArea();
+        LEDRight.displayOff();
+        LEDLeft.displayOn();
+    }
 
-  display(x);
+    else
+    {
+        LEDLeft.setDisplayArea();
+        LEDLeft.displayOff();
+        LEDRight.displayOn();
+    }
+
+    delay(100);
+
+    Serial.println(" ");
+    Serial.print("__FLT_MAX__         : ");
+    dtostre(__FLT_MAX__, str, 9, 0);
+    Serial.println(str);
+    Serial.print("__FLT_MIN__         : ");
+    dtostre(__FLT_MIN__, str, 9, 0);
+    Serial.println(str);
+    Serial.print("__FLT_MAX_10_EXP__  : ");
+    Serial.println(__FLT_MAX_10_EXP__);
+    Serial.print("__FLT_MIN_10_EXP__  : ");
+    Serial.println(__FLT_MIN_10_EXP__);
+    Serial.print("__FLT_DIG__         : ");
+    Serial.println(__FLT_DIG__);
+    Serial.print("__FLT_DECIMAL_DIG__ : ");
+    Serial.println(__FLT_DECIMAL_DIG__);
+    Serial.print("__FLT_MANT_DIG__    : ");
+    Serial.println(__FLT_MANT_DIG__);
+    Serial.println();
+
+    display(x);
 }
 
 void loop()
 {
-  // last entered digits 10 power increment
-  static int last_digit_key[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  static int last_digit_i = 0;
-  static int decimal_incr = 0;
+// last entered digits 10 power increment
+    static int last_digit_key[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    static int last_digit_i = 0;
+    static int decimal_incr = 0;
 
-  // pressed key flags
-  static bool entered = false;
-  static bool f_pressed = false;
-  static bool g_pressed = false;
-  static bool fix_selected = false;
-  static bool hyp_selected = false;
-  static bool hyp_arc_selected = false;
-  static bool gto_selected = false;
-  static bool on_pressed = false;
+    // pressed key flags
+    static bool entered = false;
+    static bool f_pressed = false;
+    static bool g_pressed = false;
+    static bool fix_selected = false;
+    static bool hyp_selected = false;
+    static bool hyp_arc_selected = false;
+    static bool gto_selected = false;
 
-  // current pressed key
-  static int pressed_key = 0;
+    // current pressed key
+    static int pressed_key = 0;
 
-  // find pressed_key
-  // ----------------
-  pressed_key = 0;
-  for (int i = 0; i < key_count; i++)
-  {
-    if (digitalRead(key[i]) == HIGH)
+    // find pressed_key
+    // ----------------
+    pressed_key = 0;
+    for (int i = 0; i < key_count; i++)
     {
-      pressed_key = kcode[i];
-      delay(100);
-      break;
+        if (digitalRead(key[i]) == HIGH)
+        {
+            pressed_key = kcode[i];
+            delay(100);
+            break;
+        }
     }
-  }
 
-  if (pressed_key == on_key) {
-    if (is_left_aligned) {
-      is_left_aligned = false;
-      Serial.print("is_left_aligned = ");
-      Serial.println(is_left_aligned);
-      setup();
-    } else {
-      is_left_aligned = true;
-      Serial.print("is_left_aligned = ");
-      Serial.println(is_left_aligned);
-      setup();
-    }
-  }
-  //    alternate (f) key pressed
-  //    -------------------------
-  else if (pressed_key == f_key)
-  {
-    f_pressed = true;
-  }
-
-  //    alternate (g) ley pressed
-  //    -------------------------
-  else if (pressed_key == g_key)
-  {
-    g_pressed = true;
-  }
-
-  //    del key pressed
-  //    ---------------
-  else if (pressed_key == del_key)
-  {
-    if (entered && last_digit_i > 0)
+    if (pressed_key == on_key)
     {
-      in = round((in - last_digit_key[last_digit_i]) / decimal_incr);
-      last_digit_i--;
-      display(in, last_digit_i);
+        if (is_left_aligned)
+        {
+            is_left_aligned = false;
+            Serial.print("is_left_aligned = ");
+            Serial.println(is_left_aligned);
+            setup();
+        }
+
+        else
+        {
+            is_left_aligned = true;
+            Serial.print("is_left_aligned = ");
+            Serial.println(is_left_aligned);
+            setup();
+        }
     }
-    else
+
+    // alternate (f) key pressed
+    // -------------------------
+    else if (pressed_key == f_key)
     {
-      clear_entered(decimal_incr, entered, last_digit_i);
-      x = 0;
-      display(x);
+        f_pressed = true;
     }
-  }
 
-  //    decimal point key pressed
-  //    -------------------------
-  else if (pressed_key == decimal_key)
-  {
-    if (entered && last_digit_i > 0)
+    // alternate (g) ley pressed
+    // -------------------------
+    else if (pressed_key == g_key)
     {
-      decimal_incr = -1;
+        g_pressed = true;
     }
-    else
+
+    // del key pressed
+    // ---------------
+    else if (pressed_key == del_key)
     {
-      stack_up();
-      clear_entered(decimal_incr, entered, last_digit_i);
-      decimal_incr = -1;
-      display(x, last_digit_i);
-      entered = true;
+        if (entered && last_digit_i > 0)
+        {
+            in = round((in - last_digit_key[last_digit_i]) / decimal_incr);
+            last_digit_i--;
+            display(in, last_digit_i);
+        }
+
+        else
+        {
+            clear_entered(decimal_incr, entered, last_digit_i);
+            x = 0;
+            display(x);
+        }
     }
 
-    //    other keys, which can be used in a pgm
-    //    --------------------------------------
-  }
-  else if (pressed_key != 0)
-  {
-    Serial.print("key = ");
-    Serial.println(pressed_key);
-
-    process_key(pressed_key,
-                f_pressed,
-                g_pressed,
-                entered,
-                fix_selected,
-                hyp_selected,
-                hyp_arc_selected,
-                gto_selected,
-                last_digit_key,
-                last_digit_i,
-                decimal_incr);
-
-    Serial.print("t = ");
-    Serial.println(t);
-    Serial.print("z = ");
-    Serial.println(z);
-    Serial.print("y = ");
-    Serial.println(y);
-    Serial.print("x = ");
-    Serial.println(x);
-
-    if (entered)
+    // decimal point key pressed
+    // -------------------------
+    else if (pressed_key == decimal_key)
     {
-      Serial.print("in = ");
-      Serial.println(in);
+        if (entered && last_digit_i > 0)
+        {
+            decimal_incr = -1;
+        }
+
+        else
+        {
+            stack_up();
+            clear_entered(decimal_incr, entered, last_digit_i);
+            decimal_incr = -1;
+            display(x, last_digit_i);
+            entered = true;
+        }
+
+        // other keys, which can be used in a pgm
+        // --------------------------------------
     }
-    Serial.println("--------------------------------------------");
-  }
-  // wait 1/10 seconds for next key press
-  delay(150);
+    else if (pressed_key != 0)
+    {
+        Serial.print("key = ");
+        Serial.println(pressed_key);
+
+        process_key(pressed_key, f_pressed, g_pressed, entered, fix_selected,
+            hyp_selected, hyp_arc_selected, gto_selected, last_digit_key,
+            last_digit_i, decimal_incr);
+
+        Serial.print("t = ");
+        Serial.println(t);
+        Serial.print("z = ");
+        Serial.println(z);
+        Serial.print("y = ");
+        Serial.println(y);
+        Serial.print("x = ");
+        Serial.println(x);
+
+        if (entered)
+        {
+            Serial.print("in = ");
+            Serial.println(in);
+        }
+        Serial.println("--------------------------------------------");
+    }
+    // wait 1/10 seconds for next key press
+    delay(150);
 }
