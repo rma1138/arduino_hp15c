@@ -43,7 +43,8 @@
 #define KEY_49 18
 #define KEY_40 6
 
-#define PRECISION 2
+#define PRECISION 4
+#define IS_LEFT_ALIGNED true
 
 int key_count = 39;
 
@@ -217,7 +218,7 @@ double in = 0;
 int precision = PRECISION;
 
 // left or right aligned display
-bool is_left_aligned = false;
+bool is_left_aligned = IS_LEFT_ALIGNED;
 
 bool is_2_operands_op(const int& op_code)
 {
@@ -710,6 +711,7 @@ void display(const double& value, const int& last_digit_i = 0)
 
 void clear_entered(int& decimal_incr, bool& entered, int& last_digit_i)
 {
+    Serial.println(__func__);
     decimal_incr = 0;
     in = 0;
     entered = false;
@@ -718,6 +720,7 @@ void clear_entered(int& decimal_incr, bool& entered, int& last_digit_i)
 
 void stack_up()
 {
+    Serial.println(__func__);
     t = z;
     z = y;
     y = x;
@@ -725,12 +728,14 @@ void stack_up()
 
 void stack_drop()
 {
+    Serial.println(__func__);
     y = z;
     z = t;
 }
 
 void stack_roll_up()
 {
+    Serial.println(__func__);
     double temp = t;
     t = z;
     z = y;
@@ -740,6 +745,7 @@ void stack_roll_up()
 
 void stack_roll_down()
 {
+    Serial.println(__func__);
     double temp = x;
     x = y;
     y = z;
@@ -749,6 +755,7 @@ void stack_roll_down()
 
 void swap_xy(const bool& entered)
 {
+    Serial.println(__func__);
     double temp;
     if (entered)
     {
@@ -963,6 +970,9 @@ void process_key(const int& key,
     // set op code based on pressed key 
     // and if g or f prefix selected or
     // if hyp or hyp_inv prefix selected
+
+    Serial.println(" ");
+
     int op_code = key;
     if (f_selected) {
         op_code = op_code * -1;
@@ -1052,10 +1062,10 @@ void process_key(const int& key,
             // enter key pressed
             else if (op_code == op_enter)
             {
+                stack_up();
                 if (entered) {
                     x = in;                    
                 }
-                stack_up();
                 clear_entered(decimal_incr, entered, last_digit_i);
                 display(x);
             }
@@ -1091,13 +1101,12 @@ void process_key(const int& key,
                         oper = noop_2;
                         break;
                 }
-
                 if (entered)
                 {
                     oper(x, in);
                     clear_entered(decimal_incr, entered, last_digit_i);
+                    stack_drop();
                 }
-
                 else
                 {
                     oper(y, x);
@@ -1170,7 +1179,6 @@ void process_key(const int& key,
                 if (entered)
                 {
                     oper(in);
-                    stack_up();
                     display(x, 0);
                     clear_entered(decimal_incr, entered, last_digit_i);
                 } else
@@ -1465,6 +1473,7 @@ void loop()
     else if (pressed_key == op_f)
     {
         f_selected = true;
+        g_selected = false;
         Serial.println("+");
     }
 
@@ -1473,6 +1482,7 @@ void loop()
     else if (pressed_key == op_g)
     {
         g_selected = true;
+        f_selected = false;
         Serial.println("+");
     }
 
@@ -1493,12 +1503,29 @@ void loop()
             x = 0;
             display(x);
         }
+
+        Serial.print("t = ");
+        Serial.println(t);
+        Serial.print("z = ");
+        Serial.println(z);
+        Serial.print("y = ");
+        Serial.println(y);
+        Serial.print("x = ");
+        Serial.println(x);
+        if (entered)
+        {
+            Serial.print("in = ");
+            Serial.println(in);
+        }
+        Serial.println("--------------------------------------------");
     }
 
     // decimal point key pressed
     // -------------------------
     else if (pressed_key == op_dp)
     {
+        Serial.println("+");
+
         if (entered && last_digit_i > 0)
         {
             decimal_incr = -1;
